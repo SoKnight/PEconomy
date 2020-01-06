@@ -1,0 +1,40 @@
+name: PEconomy
+main: ru.soknight.peconomy.PEconomy
+author: SoKnight
+version: 1.0.0
+api-version: 1.14
+commands:
+  peco:
+    aliases: [eco, economy, peco]
+    description: Main plugin command
+    usage: /peco <args>
+  balance:
+    aliases: [bal, money]
+    description: Check balance command
+    usage: /balance (player)
+  pay:
+    aliases: [transfer]
+    description: Pay other balance
+    usage: /pay <player> <amount> <wallet>
+permissions:
+  peco.help:
+    default: true
+  peco.balance:
+    default: true
+  peco.balance.other:
+    default: op
+    children:
+      peco.balance: true
+  peco.pay:
+    default: true
+  peco.add:
+    default: op
+  peco.set:
+    default: op
+  peco.reset:
+    default: op
+  peco.take:
+    default: op
+  peco.reload:
+    default: op
+  

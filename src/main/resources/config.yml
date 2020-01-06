@@ -1,0 +1,42 @@
+#  +-------------------------------------------------------------------------+
+#  |    ____    _____   _____    ___    _   _    ___    __   __   _     _    |
+#  |   |  _ \  |  ___| |  ___|  / _ \  | \ | |  / _ \  |  \_/  | | |   | |   |
+#  |   | |_| | | |___  | |     | | | | |  \| | | | | | |       |  \ \ / /    |
+#  |   |  __/  |  ___| | |     | | | | |     | | | | | | |\_/| |   \   /     |
+#  |   | |     | |___  | |___  | |_| | | |\  | | |_| | | |   | |    | |      |
+#  |   |_|     |_____| |_____|  \___/  |_| |_|  \___/  |_|   |_|    |_|      |
+#  |                                                                         |
+#  |                                                                         |
+#  |   Author: SoKnight                                     Version: 1.0.0   |
+#  |                                                                         |
+#  +-------------------------------------------------------------------------+
+#   
+# Available placeholders:
+# - %peco_balance_WALLET% - Balance of wallet
+# - %peco_has_WALLET_AMOUNT% - Player has specified amount or not (true/false)
+#
+# Configuration of database
+database:
+  # Database types: [mysql, sqlite]
+  type: sqlite
+  # MySQL configuration
+  host: localhost
+  port: 3306
+  name: peconomy
+  user: admin
+  password: peconomy
+  # SQLite configuration
+  file: peconomy.db
+# Configuration of messages
+messages:
+  # Should plugin set special prefix after all messages
+  use-prefix: false
+  # Prefix for all messages
+  # Tip - there is no space between the prefix and the message
+  prefix: "&6[PEconomy] &r"
+# Default values (for new player)
+default:
+  # Default dollar balance
+  dollars: 100
+  # Default euro balance
+  euro: 0
