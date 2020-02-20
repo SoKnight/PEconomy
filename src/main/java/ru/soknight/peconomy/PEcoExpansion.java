@@ -40,13 +40,15 @@ public class PEcoExpansion extends PlaceholderExpansion {
         if(parts.length > 1) wallet = parts[1];
         if(parts.length > 2) count = parts[2];
             
+        DatabaseManager dbm = PEconomy.getInstance().getDBManager();
+        
         switch (subid) {
         case "balance": {
-        	return Utils.format(DatabaseManager.getAmount(name, wallet));
+        	return Utils.format(dbm.getAmount(name, wallet));
         }
         case "has": {
         	float amount = Float.parseFloat(count);
-        	return String.valueOf(DatabaseManager.hasAmount(name, amount, wallet));
+        	return String.valueOf(dbm.hasAmount(name, amount, wallet));
         }
         default:
         	break;

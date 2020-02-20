@@ -4,33 +4,46 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 
+import ru.soknight.peconomy.PEconomy;
 import ru.soknight.peconomy.database.DatabaseManager;
 import ru.soknight.peconomy.files.Messages;
-import ru.soknight.peconomy.utils.Requirements;
 import ru.soknight.peconomy.utils.Utils;
 
-public class CommandSet {
+public class CommandSet extends AbstractSubCommand {
 
-	public static void execute(CommandSender sender, String[] args) {
-		if(Requirements.isInvalidUsage(sender, args, 4)) return;
+	private final CommandSender sender;
+	private final String[] args;
+	
+	public CommandSet(CommandSender sender, String[] args) {
+		super(sender, args, "peco.set", 4);
+		this.sender = sender;
+		this.args = args;
+	}
+	
+	@Override
+	public void execute() {
+		if(!hasPermission()) return;
+		if(!isCorrectUsage()) return;
 		
 		String name = args[1], amstr = args[2], wallet = args[3];
-		if(Requirements.isInvalidWallet(sender, wallet)) return;
-		if(!Requirements.argIsFloat(sender, amstr)) return;
-		if(!Requirements.playerExist(sender, name)) return;
+		if(!isCorrectWallet(wallet)) return;
+		if(!argIsInteger(amstr)) return;
+		if(!isPlayerInDatabase(name)) return;
+		
+		DatabaseManager dbm = PEconomy.getInstance().getDBManager();
 		
 		float amount = Float.parseFloat(amstr);
-		float current = DatabaseManager.setAmount(name, amount, wallet);
+		float current = dbm.setAmount(name, amount, wallet);
 		float newbal = amount;
 		
 		String cs = Utils.format(current), ns = Utils.format(newbal);
 		String fsender, freceiver;
 		if(wallet.equals("euro")) {
-			fsender = Messages.getMessage("set-euro").replace("%player%", name).replace("%current%", cs).replace("%new%", ns);
-			freceiver = Messages.getMessage("set-euro-myself").replace("%current%", cs).replace("%new%", ns);
+			fsender = Messages.formatMessage("set-euro", "%player%", name, "%current%", cs, "%new%", ns);
+			freceiver = Messages.formatMessage("set-euro-myself", "%current%", cs, "%new%", ns);
 		} else {
-			fsender = Messages.getMessage("set-dollars").replace("%player%", name).replace("%current%", cs).replace("%new%", ns);
-			freceiver = Messages.getMessage("set-dollars-myself").replace("%current%", cs).replace("%new%", ns);
+			fsender = Messages.formatMessage("set-dollars", "%player%", name, "%current%", cs, "%new%", ns);
+			freceiver = Messages.formatMessage("set-dollars-myself", "%current%", cs, "%new%", ns);
 		}
 		
 		sender.sendMessage(fsender);

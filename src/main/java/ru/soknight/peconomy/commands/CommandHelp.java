@@ -7,9 +7,19 @@ import org.bukkit.command.CommandSender;
 
 import ru.soknight.peconomy.files.Messages;
 
-public class CommandHelp {
+public class CommandHelp extends AbstractSubCommand {
+	
+	private final CommandSender sender;
+	
+	public CommandHelp(CommandSender sender) {
+		super(sender, null, "peco.help", 1);
+		this.sender = sender;
+	}
 
-	public static void execute(CommandSender sender) {
+	@Override
+	public void execute() {
+		if(!hasPermission()) return;
+		
 		String header = Messages.getRawMessage("help-header");
 		String footer = Messages.getRawMessage("help-footer");
 		List<String> body = new ArrayList<>();

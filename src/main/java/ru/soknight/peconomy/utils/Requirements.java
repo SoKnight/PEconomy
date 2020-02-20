@@ -5,6 +5,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import ru.soknight.peconomy.PEconomy;
 import ru.soknight.peconomy.database.DatabaseManager;
 import ru.soknight.peconomy.files.Messages;
 
@@ -29,13 +30,13 @@ public class Requirements {
 			if(p.getName().equals(nickname)) return true;
 		for(OfflinePlayer op : Bukkit.getOfflinePlayers())
 			if(op.getName().equals(nickname)) return true;
-		sender.sendMessage(Messages.getMessage("error-player-not-found").replace("%nickname%", nickname));
+		sender.sendMessage(Messages.formatMessage("error-player-not-found", "%nickname%", nickname));
 		return false;
 	}
 	
 	public static boolean isInvalidUsage(CommandSender sender, String[] args, int neededargscount) {
 		if(args.length < neededargscount) {
-			sender.sendMessage(Messages.getMessage("error-invalid-syntax"));
+			sender.sendMessage(Messages.getMessage("error-wrong-syntax"));
 			return true;
 		} else return false;
 	}
@@ -47,8 +48,9 @@ public class Requirements {
 	}
 	
 	public static boolean isInDatabase(CommandSender sender, String name) {
-		if(!DatabaseManager.isInDatabase(name)) {
-			sender.sendMessage(Messages.getMessage("error-not-in-database").replace("%player%", name));
+		DatabaseManager dbm = PEconomy.getInstance().getDBManager();
+		if(!dbm.isInDatabase(name)) {
+			sender.sendMessage(Messages.formatMessage("error-not-in-a-database", "%player%", name));
 			return false;
 		} else return true;
 	}
@@ -58,7 +60,7 @@ public class Requirements {
 			Float.parseFloat(arg);
 			return true;
 		} catch (NumberFormatException e) {
-			sender.sendMessage(Messages.getMessage("error-arg-is-not-float").replace("%arg%", arg));
+			sender.sendMessage(Messages.formatMessage("error-arg-is-not-float", "%arg%", arg));
 			return false;
 		}
 	}

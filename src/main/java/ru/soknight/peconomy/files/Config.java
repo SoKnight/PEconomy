@@ -10,15 +10,15 @@ import java.util.List;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
+import lombok.Getter;
 import ru.soknight.peconomy.PEconomy;
 import ru.soknight.peconomy.utils.Logger;
 
 public class Config {
 
-	public static FileConfiguration config;
-	public static String prefix;
-	public static boolean use_prefix;
-	public static float dollars, euro;
+	@Getter private static FileConfiguration config;
+	@Getter private static String prefix;
+	@Getter private static boolean usePrefix;
 	
 	public static void refresh() {
 		PEconomy instance = PEconomy.getInstance();
@@ -34,9 +34,8 @@ public class Config {
 			}
 		}
 		config = YamlConfiguration.loadConfiguration(file);
-		use_prefix = config.getBoolean("messages.use-prefix");
-		if(use_prefix) prefix = config.getString("messages.prefix").replace("&", "\u00A7");
-		dollars = config.getInt("default.dollars"); euro = config.getInt("default.euro");
+		usePrefix = config.getBoolean("messages.use-prefix");
+		if(usePrefix) prefix = config.getString("messages.prefix").replace("&", "\u00A7");
 	}
 	
 	public static List<String> getStringList(String section) {

@@ -10,7 +10,7 @@ public class PEcoAPI {
 	 * @return Count of balances in the database
 	 */
 	public static int getBalancesCount() {
-		return DatabaseManager.getBalancesCount();
+		return PEconomy.getInstance().getDBManager().getBalancesCount();
 	}
 	
 	/**
@@ -19,7 +19,7 @@ public class PEcoAPI {
 	 * @return Exist player (true) or not (false)
 	 */
 	public static boolean isInDatabase(String name) {
-		return DatabaseManager.isInDatabase(name);
+		return PEconomy.getInstance().getDBManager().isInDatabase(name);
 	}
 	
 	/**
@@ -28,7 +28,9 @@ public class PEcoAPI {
 	 * @param balance - New balance for player
 	 */
 	public static void setBalance(String name, Balance balance) {
-		DatabaseManager.setBalance(name, balance);
+		DatabaseManager dbm = PEconomy.getInstance().getDBManager();
+		if(dbm.isInDatabase(name)) dbm.update(balance);
+		else dbm.create(balance);
 	}
 	
 	/**
@@ -37,7 +39,8 @@ public class PEcoAPI {
 	 * @return Balance of player
 	 */
 	public static Balance getBalance(String name) {
-		return DatabaseManager.getBalance(name);
+		DatabaseManager dbm = PEconomy.getInstance().getDBManager();
+		return dbm.getOrCreate(name);
 	}
 	
 	/**
@@ -48,7 +51,8 @@ public class PEcoAPI {
 	 * @return Wallet balance before adding
 	 */
 	public static float addAmount(String name, float amount, String wallet) {
-		return DatabaseManager.addAmount(name, amount, wallet);
+		DatabaseManager dbm = PEconomy.getInstance().getDBManager();
+		return dbm.addAmount(name, amount, wallet);
 	}
 	
 	/**
@@ -58,7 +62,8 @@ public class PEcoAPI {
 	 * @return Amount of wallet on player's balance
 	 */
 	public static float getAmount(String name, String wallet) {
-		return DatabaseManager.getAmount(name, wallet);
+		DatabaseManager dbm = PEconomy.getInstance().getDBManager();
+		return dbm.getAmount(name, wallet);
 	}
 	
 	/**
@@ -69,7 +74,8 @@ public class PEcoAPI {
 	 * @return True if player has amount on balance or false if not
 	 */
 	public static boolean hasAmount(String name, float amount, String wallet) {
-		return DatabaseManager.hasAmount(name, amount, wallet);
+		DatabaseManager dbm = PEconomy.getInstance().getDBManager();
+		return dbm.hasAmount(name, amount, wallet);
 	}
 	
 	/**
@@ -80,7 +86,8 @@ public class PEcoAPI {
 	 * @return Wallet balance before setup
 	 */
 	public static float setAmount(String name, float amount, String wallet) {
-		return DatabaseManager.setAmount(name, amount, wallet);
+		DatabaseManager dbm = PEconomy.getInstance().getDBManager();
+		return dbm.setAmount(name, amount, wallet);
 	}
 	
 	/**
@@ -90,7 +97,8 @@ public class PEcoAPI {
 	 * @return Wallet balance before reset
 	 */
 	public static float resetAmount(String name, String wallet) {
-		return DatabaseManager.resetAmount(name, wallet);
+		DatabaseManager dbm = PEconomy.getInstance().getDBManager();
+		return dbm.resetAmount(name, wallet);
 	}
 	
 	/**
@@ -101,7 +109,8 @@ public class PEcoAPI {
 	 * @return Wallet balance before taking
 	 */
 	public static float takeAmount(String name, float amount, String wallet) {
-		return DatabaseManager.takeAmount(name, amount, wallet);
+		DatabaseManager dbm = PEconomy.getInstance().getDBManager();
+		return dbm.takeAmount(name, amount, wallet);
 	}
 	
 }

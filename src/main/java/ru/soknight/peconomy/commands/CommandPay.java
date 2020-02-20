@@ -12,6 +12,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
+import ru.soknight.peconomy.PEconomy;
 import ru.soknight.peconomy.database.DatabaseManager;
 import ru.soknight.peconomy.files.Messages;
 import ru.soknight.peconomy.utils.Requirements;
@@ -31,15 +32,19 @@ public class CommandPay implements CommandExecutor, TabCompleter {
 		
 		if(target.equals(name)) {
 			sender.sendMessage("pay-failed-to-myself");
-			return true; }
+			return true;
+		}
+		
+		DatabaseManager dbm = PEconomy.getInstance().getDBManager();
 		
 		float amount = Float.parseFloat(amstr);
-		if(!DatabaseManager.hasAmount(name, amount, wallet)) {
+		if(!dbm.hasAmount(name, amount, wallet)) {
 			sender.sendMessage("error-not-enough-money");
-			return true; }
+			return true;
+		}
 		
-		float scurrent = DatabaseManager.takeAmount(name, amount, wallet);
-		float rcurrent = DatabaseManager.addAmount(name, amount, wallet);
+		float scurrent = dbm.takeAmount(name, amount, wallet);
+		float rcurrent = dbm.addAmount(name, amount, wallet);
 		float snew = scurrent - amount, rnew = rcurrent + amount;
 		
 		String pay = Utils.format(amount), tosender, toreceiver;
@@ -47,11 +52,11 @@ public class CommandPay implements CommandExecutor, TabCompleter {
 		String sn = Utils.format(snew), rn = Utils.format(rnew);
 		
 		if(wallet.equals("euro")) {
-			tosender = Messages.getMessage("pay-euro-sender").replace("%pay%", pay);
-			toreceiver = Messages.getMessage("pay-euro-receiver").replace("%pay%", pay);
+			tosender = Messages.formatMessage("pay-euro-sender", "%pay%", pay);
+			toreceiver = Messages.formatMessage("pay-euro-receiver", "%pay%", pay);
 		} else {
-			tosender = Messages.getMessage("pay-dollars-sender").replace("%pay%", pay);
-			toreceiver = Messages.getMessage("pay-dollars-receiver").replace("%pay%", pay);
+			tosender = Messages.formatMessage("pay-dollars-sender", "%pay%", pay);
+			toreceiver = Messages.formatMessage("pay-dollars-receiver", "%pay%", pay);
 		}
 		
 		tosender = tosender.replace("%receiver%", target).replace("%current%", sc).replace("%new%", sn);
@@ -73,7 +78,7 @@ public class CommandPay implements CommandExecutor, TabCompleter {
 			for(Player p : Bukkit.getServer().getOnlinePlayers())
 				if(p.getName().toLowerCase().startsWith(args[0].toLowerCase())) output.add(p.getName());
 			for(OfflinePlayer op : Bukkit.getServer().getOfflinePlayers())
-				if(op.getName().toLowerCase().startsWith(args[0].toLowerCase()) && !output.contains(op.getName())) 
+				if(op.getName().toLowerCase().startsWith(args[0].toLowerCase()) && !output.contains(op.getName()))
 					output.add(op.getName());
 		}
 		if(args.length == 3)

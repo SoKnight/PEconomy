@@ -11,6 +11,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
+import ru.soknight.peconomy.PEconomy;
 import ru.soknight.peconomy.database.Balance;
 import ru.soknight.peconomy.database.DatabaseManager;
 import ru.soknight.peconomy.files.Messages;
@@ -22,19 +23,21 @@ public class CommandBalance implements CommandExecutor, TabCompleter {
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		String name = sender.getName();
-		if(args.length > 0) 
+		if(args.length > 0)
 			if(Requirements.hasPermission(sender, "peco.balance.other")) name = args[0];
 			else return true;
 		else if(!Requirements.isPlayer(sender)) return true;
 		
 		if(!Requirements.isInDatabase(sender, name)) return true;
-		Balance balance = DatabaseManager.getBalance(name);
+		
+		DatabaseManager dbm = PEconomy.getInstance().getDBManager();
+		Balance balance = dbm.get(name);
 		
 		float dollars = balance.getDollars(), euro = balance.getEuro();
 		String dstr = Utils.format(dollars), estr = Utils.format(euro), msg;
 		
 		if(args.length == 0) msg = Messages.getMessage("balance");
-		else msg = Messages.getMessage("balance-other").replace("%player%", name);
+		else msg = Messages.formatMessage("balance-other", "%player%", name);
 		
 		msg = msg.replace("%dollars%", dstr).replace("%euro%", estr);
 		sender.sendMessage(msg);
@@ -49,7 +52,7 @@ public class CommandBalance implements CommandExecutor, TabCompleter {
 			for(Player p : Bukkit.getServer().getOnlinePlayers())
 				if(p.getName().toLowerCase().startsWith(args[0].toLowerCase())) output.add(p.getName());
 			for(OfflinePlayer op : Bukkit.getServer().getOfflinePlayers())
-				if(op.getName().toLowerCase().startsWith(args[0].toLowerCase()) && !output.contains(op.getName())) 
+				if(op.getName().toLowerCase().startsWith(args[0].toLowerCase()) && !output.contains(op.getName()))
 					output.add(op.getName());
 		}
 		return output;

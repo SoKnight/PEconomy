@@ -13,34 +13,33 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
 import ru.soknight.peconomy.files.Messages;
-import ru.soknight.peconomy.utils.Requirements;
 
-public class SubCommands implements CommandExecutor, TabCompleter {
+public class CommandHandler implements CommandExecutor, TabCompleter {
 
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if(args.length == 0) {
-			sender.sendMessage(Messages.getMessage("error-without-args"));
+			sender.sendMessage(Messages.getMessage("error-no-args"));
 			return true; }
 		
 		switch(args[0]) {
 		case "help":
-			if(Requirements.hasPermission(sender, "peco.help")) CommandHelp.execute(sender);
+			new CommandHelp(sender).execute();
 			break;
 		case "add":
-			if(Requirements.hasPermission(sender, "peco.add")) CommandAdd.execute(sender, args);
+			new CommandAdd(sender, args).execute();
 			break;
 		case "set":
-			if(Requirements.hasPermission(sender, "peco.set")) CommandSet.execute(sender, args);
+			new CommandSet(sender, args).execute();
 			break;
 		case "reset":
-			if(Requirements.hasPermission(sender, "peco.reset")) CommandReset.execute(sender, args);
+			new CommandReset(sender, args).execute();
 			break;
 		case "take":
-			if(Requirements.hasPermission(sender, "peco.take")) CommandTake.execute(sender, args);
+			new CommandTake(sender, args).execute();
 			break;
 		case "reload":
-			if(Requirements.hasPermission(sender, "peco.reload")) CommandReload.execute(sender);
+			new CommandReload(sender).execute();
 			break;
 		default:
 			sender.sendMessage(Messages.getMessage("error-command-not-found"));
@@ -49,7 +48,7 @@ public class SubCommands implements CommandExecutor, TabCompleter {
 		return true;
 	}
 	
-	private static List<String> subcommands = Arrays.asList("help", "add", "set", "reset", "take", "reload"), 
+	private static List<String> subcommands = Arrays.asList("help", "add", "set", "reset", "take", "reload"),
 			wallets = Arrays.asList("dollars", "euro");
 	
 	@Override
@@ -69,7 +68,7 @@ public class SubCommands implements CommandExecutor, TabCompleter {
 				for(Player p : Bukkit.getServer().getOnlinePlayers())
 					if(p.getName().toLowerCase().startsWith(args[1].toLowerCase())) output.add(p.getName());
 				for(OfflinePlayer op : Bukkit.getServer().getOfflinePlayers())
-					if(op.getName().toLowerCase().startsWith(args[1].toLowerCase()) && !output.contains(op.getName())) 
+					if(op.getName().toLowerCase().startsWith(args[1].toLowerCase()) && !output.contains(op.getName()))
 						output.add(op.getName());
 			}
 			if(args.length == 4)
@@ -82,7 +81,7 @@ public class SubCommands implements CommandExecutor, TabCompleter {
 				for(Player p : Bukkit.getServer().getOnlinePlayers())
 					if(p.getName().toLowerCase().startsWith(args[1].toLowerCase())) output.add(p.getName());
 				for(OfflinePlayer op : Bukkit.getServer().getOfflinePlayers())
-					if(op.getName().toLowerCase().startsWith(args[1].toLowerCase()) && !output.contains(op.getName())) 
+					if(op.getName().toLowerCase().startsWith(args[1].toLowerCase()) && !output.contains(op.getName()))
 						output.add(op.getName());
 			}
 			if(args.length == 4)
@@ -95,7 +94,7 @@ public class SubCommands implements CommandExecutor, TabCompleter {
 				for(Player p : Bukkit.getServer().getOnlinePlayers())
 					if(p.getName().toLowerCase().startsWith(args[1].toLowerCase())) output.add(p.getName());
 				for(OfflinePlayer op : Bukkit.getServer().getOfflinePlayers())
-					if(op.getName().toLowerCase().startsWith(args[1].toLowerCase()) && !output.contains(op.getName())) 
+					if(op.getName().toLowerCase().startsWith(args[1].toLowerCase()) && !output.contains(op.getName()))
 						output.add(op.getName());
 			}
 			if(args.length == 3)
@@ -108,7 +107,7 @@ public class SubCommands implements CommandExecutor, TabCompleter {
 				for(Player p : Bukkit.getServer().getOnlinePlayers())
 					if(p.getName().toLowerCase().startsWith(args[1].toLowerCase())) output.add(p.getName());
 				for(OfflinePlayer op : Bukkit.getServer().getOfflinePlayers())
-					if(op.getName().toLowerCase().startsWith(args[1].toLowerCase()) && !output.contains(op.getName())) 
+					if(op.getName().toLowerCase().startsWith(args[1].toLowerCase()) && !output.contains(op.getName()))
 						output.add(op.getName());
 			}
 			if(args.length == 4)

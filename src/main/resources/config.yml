@@ -7,7 +7,7 @@
 #  |   |_|     |_____| |_____|  \___/  |_| |_|  \___/  |_|   |_|    |_|      |
 #  |                                                                         |
 #  |                                                                         |
-#  |   Author: SoKnight                                     Version: 1.0.0   |
+#  |   Author: SoKnight                                     Version: 1.1.0   |
 #  |                                                                         |
 #  +-------------------------------------------------------------------------+
 #   
@@ -17,8 +17,9 @@
 #
 # Configuration of database
 database:
-  # Database types: [mysql, sqlite]
-  type: sqlite
+  # Should plugin use MySQL Database as data storage?
+  # Specify 'true' for MySQL or 'false' for SQLite
+  use-mysql: false
   # MySQL configuration
   host: localhost
   port: 3306
@@ -27,13 +28,18 @@ database:
   password: peconomy
   # SQLite configuration
   file: peconomy.db
+
 # Configuration of messages
 messages:
+  # Messages localization, available: [en, ru]
+  # Write on spigotmc plugin page, if you can translate plugin to other languages
+  locale: en
   # Should plugin set special prefix after all messages
   use-prefix: false
   # Prefix for all messages
   # Tip - there is no space between the prefix and the message
   prefix: "&6[PEconomy] &r"
+
 # Default values (for new player)
 default:
   # Default dollar balance

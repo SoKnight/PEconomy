@@ -1,12 +1,13 @@
 package ru.soknight.peconomy.database;
 
 import java.io.File;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import org.bukkit.configuration.file.FileConfiguration;
+
+import com.j256.ormlite.jdbc.JdbcConnectionSource;
+import com.j256.ormlite.support.ConnectionSource;
+import com.j256.ormlite.table.TableUtils;
 
 import ru.soknight.peconomy.PEconomy;
 import ru.soknight.peconomy.files.Config;
@@ -14,46 +15,47 @@ import ru.soknight.peconomy.utils.Logger;
 
 public class Database {
 
-	static String database_type;
-	static String database_url;
-	static String mysql_host;
-	static String mysql_name;
-	static String mysql_user;
-	static String mysql_password;
-	static String sqlite_file;
-	static int mysql_port;
+	private String url;
+	private String host;
+	private String name;
+	private String user;
+	private String password;
+	private String file;
+	private boolean useMySQL;
+	private int port;
 	
 	public Database() throws Exception {
-		FileConfiguration c = Config.config;
-		database_type = c.getString("database.type");
-		if(database_type.equals("mysql")) {
-			mysql_host = c.getString("database.host");
-			mysql_name = c.getString("database.name");
-			mysql_user = c.getString("database.user");
-			mysql_password = c.getString("database.password");
-			mysql_port = c.getInt("database.port");
-			database_url = "jdbc:mysql://" + mysql_host + ":" + mysql_port + "/" + mysql_name;
+		FileConfiguration config = Config.getConfig();
+		useMySQL = config.getBoolean("database.use-mysql", false);
+		if(useMySQL) {
+			host = config.getString("database.host", "localhost");
+			name = config.getString("database.name", "peconomy");
+			user = config.getString("database.user", "admin");
+			password = config.getString("database.password", "peconomy");
+			port = config.getInt("database.port", 3306);
+			url = "jdbc:mysql://" + host + ":" + port + "/" + name;
 			Class.forName("com.mysql.jdbc.Driver").newInstance();
 		} else {
-			sqlite_file = c.getString("database.file");
-			database_url = "jdbc:sqlite:" + PEconomy.getInstance().getDataFolder() + File.separator + sqlite_file;
+			file = config.getString("database.file", "peconomy.db");
+			url = "jdbc:sqlite:" + PEconomy.getInstance().getDataFolder() + File.separator + file;
 			Class.forName("org.sqlite.JDBC").newInstance();
 		}
 		
-		Connection connection = getConnection();
-		Statement s = connection.createStatement();
+		// Allowing only ORMLite errors logging
+		System.setProperty("com.j256.ormlite.logger.type", "LOCAL");
+		System.setProperty("com.j256.ormlite.logger.level", "ERROR");
+				
+		ConnectionSource source = getConnection();
+
+		TableUtils.createTableIfNotExists(source, Balance.class);
 		
-		s.executeUpdate("CREATE TABLE IF NOT EXISTS balances (player TEXT, dollars FLOAT, euro FLOAT);");
+		source.close();
 		
-		s.close();
-		connection.close();
-		Logger.info("Database type " + database_type + " connected!");
+		Logger.info("Database type " + (useMySQL ? "MySQL" : "SQLite") + " connected!");
 	}
 	
-	public Connection getConnection() throws SQLException {
-		if(database_type.equals("mysql"))
-			return DriverManager.getConnection(database_url, mysql_user, mysql_password);
-		else return DriverManager.getConnection(database_url);
+	public ConnectionSource getConnection() throws SQLException {
+		return useMySQL ? new JdbcConnectionSource(url, user, password) : new JdbcConnectionSource(url);
 	}
 	
 }

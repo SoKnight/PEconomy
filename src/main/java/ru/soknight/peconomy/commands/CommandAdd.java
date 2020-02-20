@@ -4,23 +4,36 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 
+import ru.soknight.peconomy.PEconomy;
 import ru.soknight.peconomy.database.DatabaseManager;
 import ru.soknight.peconomy.files.Messages;
-import ru.soknight.peconomy.utils.Requirements;
 import ru.soknight.peconomy.utils.Utils;
 
-public class CommandAdd {
+public class CommandAdd extends AbstractSubCommand {
 
-	public static void execute(CommandSender sender, String[] args) {
-		if(Requirements.isInvalidUsage(sender, args, 4)) return;
+	private final CommandSender sender;
+	private final String[] args;
+	
+	public CommandAdd(CommandSender sender, String[] args) {
+		super(sender, args, "peco.add", 4);
+		this.sender = sender;
+		this.args = args;
+	}
+
+	@Override
+	public void execute() {
+		if(!hasPermission()) return;
+		if(!isCorrectUsage()) return;
 		
 		String name = args[1], amstr = args[2], wallet = args[3];
-		if(Requirements.isInvalidWallet(sender, wallet)) return;
-		if(!Requirements.argIsFloat(sender, amstr)) return;
-		if(!Requirements.playerExist(sender, name)) return;
+		if(!isCorrectWallet(wallet)) return;
+		if(!argIsInteger(amstr)) return;
+		if(!isPlayerInDatabase(name)) return;
+		
+		DatabaseManager dbm = PEconomy.getInstance().getDBManager();
 		
 		float amount = Float.parseFloat(amstr);
-		float current = DatabaseManager.addAmount(name, amount, wallet);
+		float current = dbm.addAmount(name, amount, wallet);
 		float newbal = current + amount;
 		
 		String as = Utils.format(amount), cs = Utils.format(current), ns = Utils.format(newbal);

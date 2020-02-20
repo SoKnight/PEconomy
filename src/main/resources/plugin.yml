@@ -1,8 +1,8 @@
-name: PEconomy
+name: ${project.name}
 main: ru.soknight.peconomy.PEconomy
 author: SoKnight
-version: 1.0.0
-api-version: 1.14
+version: ${project.version}
+api-version: 1.15
 commands:
   peco:
     aliases: [eco, economy, peco]

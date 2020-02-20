@@ -1,18 +1,28 @@
 package ru.soknight.peconomy.database;
 
+import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.table.DatabaseTable;
+
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import ru.soknight.peconomy.files.Config;
+
+@Data
+@NoArgsConstructor
+@DatabaseTable(tableName = "balances")
 public class Balance {
 
+	@DatabaseField(id = true)
 	private String name;
-	private float dollars, euro;
+	@DatabaseField
+	private float dollars;
+	@DatabaseField
+	private float euro;
 	
-	public Balance(String name, float dollars, float euro) {
+	public Balance(String name) {
 		this.name = name;
-		this.setDollars(dollars);
-		this.euro = euro;
-	}
-
-	public String getName() {
-		return name;
+		this.dollars = (float) Config.getConfig().getDouble("default.dollars", 0f);
+		this.euro = (float) Config.getConfig().getDouble("default.euro", 0f);
 	}
 	
 	//
@@ -23,17 +33,9 @@ public class Balance {
 		this.dollars += dollars;
 		return current;
 	}
-
-	public float getDollars() {
-		return dollars;
-	}
 	
 	public boolean hasDollars(float dollars) {
 		return (dollars <= this.dollars);
-	}
-
-	public void setDollars(float dollars) {
-		this.dollars = dollars;
 	}
 
 	public void resetDollars() {
@@ -54,17 +56,9 @@ public class Balance {
 		this.euro += euro;
 		return current;
 	}
-
-	public float getEuro() {
-		return euro;
-	}
 	
 	public boolean hasEuro(float euro) {
 		return (euro <= this.euro);
-	}
-
-	public void setEuro(float euro) {
-		this.euro = euro;
 	}
 
 	public void resetEuro() {

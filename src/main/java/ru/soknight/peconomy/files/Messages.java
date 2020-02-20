@@ -2,6 +2,7 @@ package ru.soknight.peconomy.files;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
@@ -12,24 +13,35 @@ import java.util.Map;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
+import lombok.Getter;
 import ru.soknight.peconomy.PEconomy;
 import ru.soknight.peconomy.utils.HelpCommand;
 import ru.soknight.peconomy.utils.Logger;
 
 public class Messages {
 
-	public static FileConfiguration config;
+	@Getter
+	private static FileConfiguration config;
 	private static Map<String, HelpCommand> help_list;
 	
 	public static void refresh() {
+		String locale = Config.getConfig().getString("messages.locale", "en");
+		
 		PEconomy instance = PEconomy.getInstance();
 		File datafolder = instance.getDataFolder();
 		if(!datafolder.isDirectory()) datafolder.mkdirs();
-		File file = new File(instance.getDataFolder(), "messages_en.yml");
+		File file = new File(instance.getDataFolder(), "messages_" + locale + ".yml");
 		if(!file.exists()) {
 			try {
-				Files.copy(instance.getResource("messages_en.yml"), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
-				Logger.info("Generated new messages file.");
+				InputStream input = instance.getResource("messages_" + locale + ".yml");
+				if(input == null) {
+					Logger.error("Unknown locale " + locale + ", localization for this locale not found.");
+					input = instance.getResource("messages_en.yml");
+					locale = "en";
+				}
+				
+				Files.copy(input, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+				Logger.info("Generated new messages file for locale '" + locale + "'.");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -39,21 +51,36 @@ public class Messages {
 	}
 	
 	public static String getMessage(String section) {
-		if(!config.isSet(section) || !config.contains(section)) {
-			Logger.error("Couldn't load message from messages_en.yml: " + section);
-			return "Whoops! Message not found :(";
-		}
-		String output = config.getString(section).replace("&", "\u00A7");
-		if(Config.use_prefix) output = Config.prefix + output;
+		String output = getRawMessage(section);
+		if(Config.isUsePrefix()) output = Config.getPrefix() + output;
 		return output;
 	}
 	
 	public static String getRawMessage(String section) {
-		if(!config.isSet(section) || !config.contains(section)) {
-			Logger.error("Couldn't load message from messages_en.yml: " + section);
+		if(!config.isSet(section)) {
+			Logger.error("Couldn't load message from messages.yml: " + section);
 			return "Whoops! Message not found :(";
 		}
 		String output = config.getString(section).replace("&", "\u00A7");
+		return output;
+	}
+	
+	public static String formatMessage(String section, String... replacements) {
+		if(!config.isSet(section)) {
+			Logger.error("Couldn't load message from messages.yml: " + section);
+			return "Whoops! Message not found :(";
+		}
+		String output = config.getString(section).replace("&", "\u00A7");
+		
+		for(int i = 0; i < replacements.length; i++) {
+			String replacement = replacements[i];
+			if(replacement.startsWith("%") && replacement.endsWith("%")) continue;
+			
+			String node = replacements[i - 1];
+			output = output.replace(node, replacement);
+		}
+		
+		if(Config.isUsePrefix()) output = Config.getPrefix() + output;
 		return output;
 	}
 	
@@ -74,7 +101,7 @@ public class Messages {
 		format = getMessage("help-body");
 		help_list = new HashMap<>();
 		
-		HelpCommand 
+		HelpCommand
 			help = new HelpCommand("help", "help"),
 			add = new HelpCommand("peco add", "add", "target", "amount", "wallet"),
 			set = new HelpCommand("peco set", "set", "target", "amount", "wallet"),

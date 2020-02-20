@@ -4,30 +4,42 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 
+import ru.soknight.peconomy.PEconomy;
 import ru.soknight.peconomy.database.DatabaseManager;
 import ru.soknight.peconomy.files.Messages;
-import ru.soknight.peconomy.utils.Requirements;
 import ru.soknight.peconomy.utils.Utils;
 
-public class CommandReset {
+public class CommandReset extends AbstractSubCommand {
 
-	public static void execute(CommandSender sender, String[] args) {
-		if(Requirements.isInvalidUsage(sender, args, 3)) return;
+	private final CommandSender sender;
+	private final String[] args;
+	
+	public CommandReset(CommandSender sender, String[] args) {
+		super(sender, args, "peco.reset", 3);
+		this.sender = sender;
+		this.args = args;
+	}
+	
+	@Override
+	public void execute() {
+		if(!hasPermission()) return;
+		if(!isCorrectUsage()) return;
 		
 		String name = args[1], wallet = args[2];
-		if(Requirements.isInvalidWallet(sender, wallet)) return;
-		if(!Requirements.playerExist(sender, name)) return;
+		if(!isCorrectWallet(wallet)) return;
+		if(!isPlayerInDatabase(name)) return;
 		
-		float current = DatabaseManager.resetAmount(name, wallet);
+		DatabaseManager dbm = PEconomy.getInstance().getDBManager();
+		float current = dbm.resetAmount(name, wallet);
 		
 		String cs = Utils.format(current);
 		String fsender, freceiver;
 		if(wallet.equals("euro")) {
-			fsender = Messages.getMessage("reset-euro").replace("%player%", name).replace("%current%", cs);
-			freceiver = Messages.getMessage("reset-euro-myself").replace("%current%", cs);
+			fsender = Messages.formatMessage("reset-euro", "%player%", name, "%current%", cs);
+			freceiver = Messages.formatMessage("reset-euro-myself", "%current%", cs);
 		} else {
-			fsender = Messages.getMessage("reset-dollars").replace("%player%", name).replace("%current%", cs);
-			freceiver = Messages.getMessage("reset-dollars-myself").replace("%current%", cs);
+			fsender = Messages.formatMessage("reset-dollars", "%player%", name, "%current%", cs);
+			freceiver = Messages.formatMessage("reset-dollars-myself", "%current%", cs);
 		}
 		
 		sender.sendMessage(fsender);

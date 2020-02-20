@@ -1,13 +1,12 @@
 # Errors
-error-without-args: "&cRequired arguments are not specified. Use '/peco help' for help."
-error-invalid-syntax: "&cWrong command syntax. Use '/peco help' for help."
+error-no-args: "&cRequired arguments are not specified. Use '/peco help' for help."
+error-wrong-syntax: "&cWrong command syntax. Use '/peco help' for help."
 error-command-not-found: "&cUnknown command. Use '/peco help' for help."
 error-only-for-players: "&cThis command only for players."
-error-no-permission: "&cNot enough permissions."
+error-no-permissions: "&cNot enough permissions."
 error-arg-is-not-float: "&cArgument %arg% must be integer or float."
-error-player-not-found: "&cPlayer %nickname% not found."
 error-wallet-not-found: "&cUnknown wallet '%wallet%'. Use 'dollars' or 'euro'."
-error-not-in-database: "&cPlayer %player% is not in a database."
+error-not-in-a-database: "&cPlayer %player% is not in a database."
 error-not-enough-money: "&cNot enough money."
 
 # Failed operations
@@ -17,26 +16,26 @@ failed-ops-euro: "&cNot enough permissions for this operation with euro."
 # Adding
 added-dollars: "&fAdded &b%added%$ &fto &b%player%'s &fbalance: &b%current%$ &a-> &b%new%$&f."
 added-euro: "&fAdded &b%added%€ &fto &b%player%'s &fbalance: &b%current%€ &a-> &b%new%€&f."
-added-dollars-myself: " \n&fReceived &b%added%$ &fto your balance: &b%current%$ &a-> &b%new%$&f.\n "
-added-euro-myself: " \n&fReceived &b%added%€ &fto your balance: &b%current%€ &a-> &b%new%$&f.\n "
+added-dollars-myself: "&6| \n&6| &fReceived &b%added%$ &fto your balance: &b%current%$ &a-> &b%new%$&f.\n&6| "
+added-euro-myself: "&6| \n&6| &fReceived &b%added%€ &fto your balance: &b%current%€ &a-> &b%new%€&f.\n&6| "
 
 # Setting
 set-dollars: "&fDollars balance of &b%player% &fchanged&f: &b%current%$ &f-> &b%new%$&f."
 set-euro: "&fEuro balance of &b%player% &fchanged&f: &b%current%€ &f-> &b%new%€&f."
-set-dollars-myself: " \n&fYour dollars balance changed&f: &b%current%$ &f-> &b%new%$&f.\n "
-set-euro-myself: " \n&fYour euro balance changed&f: &b%current%€ &f-> &b%new%$&f.\n "
+set-dollars-myself: "&6| \n&6| &fYour dollars balance changed&f: &b%current%$ &f-> &b%new%$&f.\n&6| "
+set-euro-myself: "&6| \n&6| &fYour euro balance changed&f: &b%current%€ &f-> &b%new%€&f.\n&6| "
 
 # Reset
 reset-dollars: "&fDollars balance of &b%player% &fhas been reset&f: &b%current%$ &c-> &b0$&f."
 reset-euro: "&fEuro balance of &b%player% &fhas been reset&f: &b%current%€ &c-> &b0€&f."
-reset-dollars-myself: " \n&fYour dollars balance has been reset&f: &b%current%$ &c-> &b0$&f.\n "
-reset-euro-myself: " \n&fYour euro balance has been reset&f: &b%current%€ &c-> &b0$&f.\n "
+reset-dollars-myself: "&6| \n&6| &fYour dollars balance has been reset&f: &b%current%$ &c-> &b0$&f.\n&6| "
+reset-euro-myself: "&6| \n&6| &fYour euro balance has been reset&f: &b%current%€ &c-> &b0€&f.\n&6| "
 
 # Taking
 taked-dollars: "&fTaked &b%taked%$ &ffrom &b%player%'s &fbalance: &b%current%$ &c-> &b%new%$&f."
 taked-euro: "&fTaked &b%taked%€ &ffrom &b%player%'s &fbalance: &b%current%€ &c-> &b%new%€&f."
-taked-dollars-myself: " \n&fTaked &b%taked%$ &ffrom your balance: &b%current%$ &c-> &b%new%$&f.\n "
-taked-euro-myself: " \n&fTaked &b%taked%€ &ffrom your balance: &b%current%€ &c-> &b%new%$&f.\n "
+taked-dollars-myself: "&6| \n&6| &fTaked &b%taked%$ &ffrom your balance: &b%current%$ &c-> &b%new%$&f.\n&6| "
+taked-euro-myself: "&6| \n&6| &fTaked &b%taked%€ &ffrom your balance: &b%current%€ &c-> &b%new%€&f.\n&6| "
 taking-failed-dollars: "&cPlayer %player% has %current%$, which is less than requested %amount%$."
 taking-failed-euro: "&cPlayer %player% has %current%€, which is less than requested %amount%€."
 
@@ -46,29 +45,29 @@ balance-other: "&fBalance of %player%: &b%dollars%$&f, &b%euro%€"
 
 # Pay
 pay-dollars-sender: "&fSent &b%pay%$ &fto &b%receiver%&f: &b%current%$ &c-> &b%new%$&f."
-pay-dollars-receiver: " \n&fReceived &b%pay%$ &ffrom &b%sender%&f: &b%current%$ &a-> &b%new%$&f.\n "
+pay-dollars-receiver: "&6| \n&6| &fReceived &b%pay%$ &ffrom &b%sender%&f: &b%current%$ &a-> &b%new%$&f.\n&6| "
 pay-euro-sender: "&fSent &b%pay%€ &fto &b%receiver%&f: &b%current%€ &c-> &b%new%€&f."
-pay-euro-receiver: " \n&fReceived &b%pay%€ &ffrom &b%sender%&f: &b%current%€ &a-> &b%new%€&f.\n "
-pay-failed-to-myself: "&cWhy do you want to transfer money to yourself?."
+pay-euro-receiver: "&6| \n&6| &fReceived &b%pay%€ &ffrom &b%sender%&f: &b%current%€ &a-> &b%new%€&f.\n&6| "
+pay-failed-to-myself: "&cWhy do you want to transfer money to yourself?"
 
 # Misc
 reload-success: "&fPEconomy reloaded."
 
 # Help
-help-header: '&f##          &7Help for PEconomy          &f##'
+help-header: '&f##     &7Help for PEconomy     &f##'
 help-body: '&f&l• &b/%cmd% &f&l- &f%desc%'
-help-footer: '&f##                &7-=*=-                &f##'
+help-footer: '&f##        &7-=*=-        &f##'
 help-descriptions:
-  help: 'View this page'
-  balance: 'View your balance'
-  balance-other: 'View balance of player'
-  pay: 'Pay money to other player'
-  add: 'Add money to balance'
-  set: 'Set money on balance'
-  reset: 'Reset money on balance'
-  take: 'Take money from balance'
-  reload: 'Reload configurations'
+ help: 'View this page'
+ balance: 'View your balance'
+ balance-other: 'View balance of player'
+ pay: 'Pay money to other player'
+ add: 'Add money to balance'
+ set: 'Set money on balance'
+ reset: 'Reset money on balance'
+ take: 'Take money from balance'
+ reload: 'Reload configurations'
 help-nodes:
-  amount: '<amount>'
-  wallet: '<wallet>'
-  target: '<target>'
+ amount: '<amount>'
+ wallet: '<wallet>'
+ target: '<target>'

@@ -2,10 +2,12 @@
  	<modelVersion>4.0.0</modelVersion>
   	<groupId>ru.soknight</groupId>
   	<artifactId>peconomy</artifactId>
- 	<version>1.0.0</version>
+ 	<version>1.1.0</version>
+ 	
   	<name>PEconomy</name>
 
 	<properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <github.global.server>github</github.global.server>
         <github.maven-plugin>0.12</github.maven-plugin>
     </properties>
@@ -34,7 +36,7 @@
   		<dependency>
     		<groupId>com.destroystokyo.paper</groupId>
     		<artifactId>paper-api</artifactId>
-    		<version>1.14.4-R0.1-SNAPSHOT</version>
+    		<version>1.15.2-R0.1-SNAPSHOT</version>
     		<scope>provided</scope>
  		</dependency>
  		<!-- Placeholders API -->
@@ -43,6 +45,24 @@
           	<artifactId>placeholderapi</artifactId>
          	<version>2.10.4</version>
          	<scope>provided</scope>
+        </dependency>
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.10</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- ORMLite -->
+        <dependency>
+            <groupId>com.j256.ormlite</groupId>
+            <artifactId>ormlite-jdbc</artifactId>
+            <version>5.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.j256.ormlite</groupId>
+            <artifactId>ormlite-core</artifactId>
+            <version>5.1</version>
         </dependency>
   	</dependencies>
 
@@ -96,6 +116,26 @@
                             <goal>site</goal>
                         </goals>
                         <phase>deploy</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.2.1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>ru.soknight.peconomy.PEconomy</mainClass>
+                                </transformer>
+                            </transformers>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
