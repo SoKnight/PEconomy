@@ -2,166 +2,143 @@ package ru.soknight.peconomy.database;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.logging.Logger;
 
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
+import com.j256.ormlite.stmt.QueryBuilder;
+import com.j256.ormlite.stmt.Where;
 import com.j256.ormlite.support.ConnectionSource;
 
-import ru.soknight.peconomy.utils.Logger;
+import ru.soknight.peconomy.PEconomy;
 
 public class DatabaseManager {
 	
-	private ConnectionSource source;
-	private Dao<Balance, String> dao;
+	private final Logger logger;
+	private final ConnectionSource source;
 	
-	public DatabaseManager(Database database) throws SQLException {
-		source = database.getConnection();
-		dao = DaoManager.createDao(source, Balance.class);
+	private final Dao<Wallet, String> ownersDao;
+	private final Dao<Transaction, Integer> transactionsDao;
+	
+	public DatabaseManager(PEconomy plugin, Database database) throws SQLException {
+		this.logger = plugin.getLogger();
+		this.source = database.getConnection();
+		
+		this.ownersDao = DaoManager.createDao(source, Wallet.class);
+		this.transactionsDao = DaoManager.createDao(source, Transaction.class);
 	}
 	
 	public void shutdown() {
 		try {
 			source.close();
-			Logger.info("Database connection closed.");
+			logger.info("Database connection closed.");
 		} catch (IOException e) {
-			Logger.error("Failed close database connection: " + e.getLocalizedMessage());
+			logger.severe("Failed to close database connection: " + e.getLocalizedMessage());
 		}
 	}
 	
-	public Balance get(String name) {
-		try {
-			Balance balance = dao.queryForId(name);
-			return balance;
-		} catch (SQLException e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
+	/*
+	 * Players wallets
+	 */
 	
-	public Balance getOrCreate(String name) {
+	public boolean createWallet(Wallet owner) {
 		try {
-			Balance balance = dao.queryForId(name);
-			if(balance != null) return balance;
-			
-			balance = new Balance(name);
-			create(balance);
-			return balance;
+			return this.ownersDao.create(owner) != 0;
 		} catch (SQLException e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-	
-	public int create(Balance balance) {
-		try {
-			return dao.create(balance);
-		} catch (SQLException e) {
-			e.printStackTrace();
-			return 0;
-		}
-	}
-	
-	public int update(Balance balance) {
-		try {
-			return dao.update(balance);
-		} catch (SQLException e) {
-			e.printStackTrace();
-			return 0;
-		}
-	}
-	
-	public int getBalancesCount() {
-		try {
-			return dao.queryForAll().size();
-		} catch (SQLException e) {
-			e.printStackTrace();
-			return 0;
-		}
-	}
-	
-	public boolean isInDatabase(String name) {
-		try {
-			Balance balance = dao.queryForId(name);
-			return balance != null;
-		} catch (SQLException e) {
-			e.printStackTrace();
+			logger.severe("Failed to create wallet of player '" + owner.getOwner() + "': " + e.getMessage());
 			return false;
 		}
 	}
 	
-	public float addAmount(String name, float amount, String wallet) {
-		Balance balance = getOrCreate(name);
-		
-		float current = amount;
-		if(wallet.equals("euro")) current = balance.addEuro(amount);
-		else current = balance.addDollars(amount);
-		update(balance);
-		return current;
-	}
-	
-	public float getAmount(String name, String wallet) {
-		if(!isInDatabase(name)) return 0;
-		Balance balance = get(name);
-		
-		float current;
-		if(wallet.equals("euro")) current = balance.getEuro();
-		else current = balance.getDollars();
-		return current;
-	}
-	
-	public boolean hasAmount(String name, float amount, String wallet) {
-		if(!isInDatabase(name)) return false;
-		Balance balance = get(name);
-		
-		if(wallet.equals("euro")) return balance.hasEuro(amount);
-		return balance.hasDollars(amount);
-	}
-	
-	public float setAmount(String name, float amount, String wallet) {
-		Balance balance = getOrCreate(name);
-		
-		float current = 0;
-		if(wallet.equals("euro")) {
-			current = balance.getEuro();
-			balance.setEuro(amount);
-		} else {
-			current = balance.getDollars();
-			balance.setDollars(amount);
+	public Wallet getWallet(String name) {
+		try {
+			return this.ownersDao.queryForId(name);
+		} catch (SQLException e) {
+			logger.severe("Failed to get wallet for player '" + name + "': " + e.getMessage());
+			return null;
 		}
-		update(balance);
-		return current;
 	}
 	
-	public float resetAmount(String name, String wallet) {
-		if(!isInDatabase(name)) return 0;
-		Balance balance = get(name);
-		
-		float current = 0;
-		if(wallet.equals("euro")) {
-			current = balance.getEuro();
-			balance.setEuro(0f);
-		} else {
-			current = balance.getDollars();
-			balance.setDollars(0f);
+	public int getWalletsCount() {
+		try {
+			return this.ownersDao.queryForAll().size();
+		} catch (SQLException e) {
+			logger.severe("Failed to get wallets count: " + e.getMessage());
+			return 0;
 		}
-		update(balance);
-		return current;
 	}
 	
-	public float takeAmount(String name, float amount, String wallet) {
-		if(!isInDatabase(name)) return 0;
-		Balance balance = get(name);
-		
-		float current = 0;
-		if(wallet.equals("euro")) {
-			current = balance.getEuro();
-			balance.takeEuro(amount);
-		} else {
-			current = balance.getDollars();
-			balance.takeDollars(amount);
+	public boolean hasWallet(String name) {
+		return getWallet(name) != null;
+	}
+	
+	public boolean transferWallet(Wallet owner, String name) {
+		try {
+			return this.ownersDao.updateId(owner, name) != 0;
+		} catch (SQLException e) {
+			logger.severe("Failed to transfer wallet of player '" + owner.getOwner() + "' to '" + name + "': "
+					+ e.getMessage());
+			return false;
 		}
-		update(balance);
-		return current;
+	}
+	
+	public boolean updateWallet(Wallet wallet) {
+		try {
+			return this.ownersDao.update(wallet) != 0;
+		} catch (SQLException e) {
+			logger.severe("Failed to update wallet of player '" + wallet.getOwner() + "': " + e.getMessage());
+			return false;
+		}
+	}
+	
+	/*
+	 * Transactions
+	 */
+	
+	public Transaction getTransactionByID(int id) {
+		try {
+			return this.transactionsDao.queryForId(id);
+		} catch (SQLException e) {
+			logger.severe("Failed to get transaction by ID #" + id + ": " + e.getMessage());
+			return null;
+		}
+	}
+	
+//	public List<Transaction> getAllTransactions() {
+//		try {
+//			return this.transactionsDao.queryForAll();
+//		} catch (SQLException e) {
+//			logger.severe("Failed to get all transactions: " + e.getMessage());
+//			return null;
+//		}
+//	}
+	
+	public List<Transaction> getWalletTransactions(String owner) {
+		try {
+			QueryBuilder<Transaction, Integer> builder = transactionsDao.queryBuilder();
+			Where<Transaction, Integer> where = builder.where();
+			
+			where.eq("owner", owner);
+			
+			return builder.query();
+		} catch (SQLException e) {
+			logger.severe("Failed to get transactions for " + owner + "'s wallet: " + e.getMessage());
+			return null;
+		}
+	}
+	
+	public boolean hasTransactionWithID(int id) {
+		return getTransactionByID(id) != null;
+	}
+	
+	public boolean saveTransaction(Transaction transaction) {
+		try {
+			return this.transactionsDao.create(transaction) != 0;
+		} catch (SQLException e) {
+			logger.severe("Failed to save transaction: " + e.getMessage());
+			return false;
+		}
 	}
 	
 }

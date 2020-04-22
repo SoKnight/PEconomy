@@ -1,116 +1,154 @@
 package ru.soknight.peconomy;
 
-import ru.soknight.peconomy.database.Balance;
+import lombok.AllArgsConstructor;
 import ru.soknight.peconomy.database.DatabaseManager;
+import ru.soknight.peconomy.database.Transaction;
+import ru.soknight.peconomy.database.Wallet;
 
+@AllArgsConstructor
 public class PEcoAPI {
+	
+	private final DatabaseManager databaseManager;
+	
+	/**
+	 * Gets total count of wallets in the database
+	 * @return Total count of wallets
+	 */
+	public int getWalletsCount() {
+		return databaseManager.getWalletsCount();
+	}
+	
+	/**
+	 * Checks if specified player is {@link Wallet} owner
+	 * @param player - Name of player to check
+	 * @return True if player has wallet or false if not
+	 */
+	public boolean hasWallet(String player) {
+		return databaseManager.hasWallet(player);
+	}
+	
+	/**
+	 * Gets player's wallet from the database if it's exists
+	 * @param player - The potential owner of wallet
+	 * @return Exist player's wallet or null if it's not exist
+	 */
+	public Wallet getWallet(String player) {
+		return databaseManager.getWallet(player);
+	}
+	
+	/**
+	 * Updates player's wallet in the database
+	 * @param wallet - Player's wallet which will be updated in the database
+	 */
+	public void updateWallet(Wallet wallet) {
+		if(databaseManager.hasWallet(wallet.getOwner()))
+			databaseManager.updateWallet(wallet);
+		else databaseManager.createWallet(wallet);
+	}
+	
+	/**
+	 * Adds amount of specified currency to player's balance
+	 * @param player - Name of target player
+	 * @param currency - Target currency's ID
+	 * @param amount - Amount of currency to add
+	 * @return
+	 * @return Player's {@link Wallet} after transaction (may be null)
+	 */
+	public Wallet addAmount(String player, String currency, float amount) {
+		Wallet wallet = getWallet(player);
+		
+		if(wallet == null) return null;
+		
+		wallet.addAmount(currency, amount);
+		return wallet;
+	}
+	
+	/**
+	 * Gets amount of specified currency on the player's balance
+	 * @param player - Name of target player
+	 * @param currency - Target currency's ID
+	 * @return Amount of specified currency on the balance
+	 */
+	public float getAmount(String player, String currency) {
+		Wallet wallet = getWallet(player);
+		
+		return wallet == null ? 0F : wallet.getAmount(currency);
+	}
+	
+	/**
+	 * Checks if specified amount is on player's balance
+	 * @param player - Name of player to check
+	 * @param currency - Target currency's ID
+	 * @param amount - Amount of currency to check
+	 * @return True if player has this amount on him balance or false if not
+	 */
+	public boolean hasAmount(String player, String currency, float amount) {
+		Wallet wallet = getWallet(player);
+		
+		return wallet == null ? false : wallet.hasAmount(currency, amount);
+	}
+	
+	/**
+	 * Sets specified amount of currency on the player's balance
+	 * @param player - Name of target player
+	 * @param currency - Target currency's ID
+	 * @param amount - New amount of this currency
+	 * @return Player's {@link Wallet} after transaction (may be null)
+	 */
+	public Wallet setAmount(String player, String currency, float amount) {
+		Wallet wallet = getWallet(player);
+		if(wallet == null) return null;
+		
+		wallet.addAmount(currency, amount);
+		return wallet;
+	}
+	
+	/**
+	 * Nullifies currency's balance in the player's wallet
+	 * @param player - Name of target player
+	 * @param currency - Target currency's ID
+	 * @return Player's {@link Wallet} after transaction (may be null)
+	 */
+	public Wallet resetAmount(String player, String currency) {
+		Wallet wallet = getWallet(player);
+		if(wallet == null) return null;
+		
+		wallet.resetWallet(currency);
+		return wallet;
+	}
+	
+	/**
+	 * Taking specified amount of currency from player's balance
+	 * @param player - Name of target player
+	 * @param currency - Target currency's ID
+	 * @param amount - Amount of currency to take
+	 * @return Player's {@link Wallet} after transaction (may be null)
+	 */
+	public Wallet takeAmount(String player, String currency, float amount) {
+		Wallet wallet = getWallet(player);
+		if(wallet == null) return null;
+		
+		wallet.takeAmount(currency, amount);
+		return wallet;
+	}
+	
+	/**
+	 * Gets economy transaction by ID if it has been completed
+	 * @param id - Transaction's ID
+	 * @return Exist transaction object or null if transaction with this ID cannot be found
+	 */
+	public Transaction getTransaction(int id) {
+		return databaseManager.getTransactionByID(id);
+	}
 
 	/**
-	 * Getting count of balances in the database
-	 * @return Count of balances in the database
+	 * Saves transaction and gets her ID which will be set by database manager
+	 * @param transaction - Transaction to save
+	 * @return Transaction's ID from database (may be null if saving will be failed)
 	 */
-	public static int getBalancesCount() {
-		return PEconomy.getInstance().getDBManager().getBalancesCount();
-	}
-	
-	/**
-	 * Checking player exist in the database
-	 * @param name - Name of target player
-	 * @return Exist player (true) or not (false)
-	 */
-	public static boolean isInDatabase(String name) {
-		return PEconomy.getInstance().getDBManager().isInDatabase(name);
-	}
-	
-	/**
-	 * Setup balance for player
-	 * @param name - Name of target player
-	 * @param balance - New balance for player
-	 */
-	public static void setBalance(String name, Balance balance) {
-		DatabaseManager dbm = PEconomy.getInstance().getDBManager();
-		if(dbm.isInDatabase(name)) dbm.update(balance);
-		else dbm.create(balance);
-	}
-	
-	/**
-	 * Getting player's balance
-	 * @param name - Name of target player
-	 * @return Balance of player
-	 */
-	public static Balance getBalance(String name) {
-		DatabaseManager dbm = PEconomy.getInstance().getDBManager();
-		return dbm.getOrCreate(name);
-	}
-	
-	/**
-	 * Adding amount of specified wallet to player's balance
-	 * @param name - Name of target player
-	 * @param amount - Amount to adding
-	 * @param wallet - Target wallet (dollars or euro)
-	 * @return Wallet balance before adding
-	 */
-	public static float addAmount(String name, float amount, String wallet) {
-		DatabaseManager dbm = PEconomy.getInstance().getDBManager();
-		return dbm.addAmount(name, amount, wallet);
-	}
-	
-	/**
-	 * Getting amount of specified wallet on player's balance
-	 * @param name - Name of target player
-	 * @param wallet - Target wallet (dollars or euro)
-	 * @return Amount of wallet on player's balance
-	 */
-	public static float getAmount(String name, String wallet) {
-		DatabaseManager dbm = PEconomy.getInstance().getDBManager();
-		return dbm.getAmount(name, wallet);
-	}
-	
-	/**
-	 * Checking amount of specified wallet on player's balance
-	 * @param name - Name of target player
-	 * @param amount - Amount of wallet for checking
-	 * @param wallet - Target wallet (dollars or euro)
-	 * @return True if player has amount on balance or false if not
-	 */
-	public static boolean hasAmount(String name, float amount, String wallet) {
-		DatabaseManager dbm = PEconomy.getInstance().getDBManager();
-		return dbm.hasAmount(name, amount, wallet);
-	}
-	
-	/**
-	 * Setup specified amount of wallet on player's balance
-	 * @param name - Name of target player
-	 * @param amount - New amount of wallet
-	 * @param wallet - Target wallet (dollars or euro)
-	 * @return Wallet balance before setup
-	 */
-	public static float setAmount(String name, float amount, String wallet) {
-		DatabaseManager dbm = PEconomy.getInstance().getDBManager();
-		return dbm.setAmount(name, amount, wallet);
-	}
-	
-	/**
-	 * Reset amount of wallet on player's balance
-	 * @param name - Name of target player
-	 * @param wallet - Target wallet (dollars or euro)
-	 * @return Wallet balance before reset
-	 */
-	public static float resetAmount(String name, String wallet) {
-		DatabaseManager dbm = PEconomy.getInstance().getDBManager();
-		return dbm.resetAmount(name, wallet);
-	}
-	
-	/**
-	 * Taking specified amount of wallet from player's balance
-	 * @param name - Name of target player
-	 * @param amount - Amount of wallet for taking
-	 * @param wallet - Target wallet (dollars or euro)
-	 * @return Wallet balance before taking
-	 */
-	public static float takeAmount(String name, float amount, String wallet) {
-		DatabaseManager dbm = PEconomy.getInstance().getDBManager();
-		return dbm.takeAmount(name, amount, wallet);
+	public Integer saveTransaction(Transaction transaction) {
+		databaseManager.saveTransaction(transaction);
+		return transaction.getId();
 	}
 	
 }
