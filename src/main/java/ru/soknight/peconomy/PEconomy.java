@@ -57,7 +57,7 @@ public class PEconomy extends JavaPlugin {
 		getServer().getPluginManager().registerEvents(joinListener, this);
 		
 		// PEconomy API initialization
-		api = new PEcoAPI(databaseManager);
+		api = new PEcoAPI(databaseManager, currenciesManager);
 		
 		// Trying to hook into PAPI and Vault
 		hookInto();

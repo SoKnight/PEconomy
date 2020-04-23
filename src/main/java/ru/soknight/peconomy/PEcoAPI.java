@@ -1,6 +1,8 @@
 package ru.soknight.peconomy;
 
 import lombok.AllArgsConstructor;
+import ru.soknight.peconomy.configuration.CurrenciesManager;
+import ru.soknight.peconomy.configuration.CurrencyInstance;
 import ru.soknight.peconomy.database.DatabaseManager;
 import ru.soknight.peconomy.database.Transaction;
 import ru.soknight.peconomy.database.Wallet;
@@ -9,6 +11,7 @@ import ru.soknight.peconomy.database.Wallet;
 public class PEcoAPI {
 	
 	private final DatabaseManager databaseManager;
+	private final CurrenciesManager currenciesManager;
 	
 	/**
 	 * Gets total count of wallets in the database
@@ -149,6 +152,24 @@ public class PEcoAPI {
 	public Integer saveTransaction(Transaction transaction) {
 		databaseManager.saveTransaction(transaction);
 		return transaction.getId();
+	}
+	
+	/**
+	 * Gets currency instance by ID if requested currency has been initialized by PEconomy
+	 * @param id - Target currency's ID
+	 * @return Exist currency instance or null if currency with this ID has not been initialized
+	 */
+	public CurrencyInstance getCurrencyByID(String id) {
+		return currenciesManager.getCurrency(id);
+	}
+	
+	/**
+	 * Checks if currency instance with specified ID is initialized by PEconomy or not
+	 * @param id - Target currency's ID
+	 * @return 'true' if this currency instance initialized or 'false' if not
+	 */
+	public boolean isCurrencyInitialized(String id) {
+		return getCurrencyByID(id) != null;
 	}
 	
 }
