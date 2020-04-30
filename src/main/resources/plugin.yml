@@ -4,6 +4,7 @@ author: SoKnight
 version: ${project.version}
 depend: [SKLibrary]
 softdepend: [Vault]
+api-version: 1.13
 commands:
   peco:
     aliases: [eco, economy, peco]

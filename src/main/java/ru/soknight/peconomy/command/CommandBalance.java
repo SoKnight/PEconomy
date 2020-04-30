@@ -11,6 +11,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import ru.soknight.lib.argument.CommandArguments;
 import ru.soknight.lib.command.ExtendedCommandExecutor;
 import ru.soknight.lib.configuration.Configuration;
 import ru.soknight.lib.configuration.Messages;
@@ -48,20 +49,20 @@ public class CommandBalance extends ExtendedCommandExecutor {
 	}
 
 	@Override
-	public void executeCommand(CommandSender sender, String[] args) {
+	public void executeCommand(CommandSender sender, CommandArguments args) {
 		if(!validateExecution(sender, args)) return;
 		
 		String name = sender.getName();
 		boolean other = false;
 		
 		// Other balance checking execution
-		if(args.length != 0) {
+		if(!args.isEmpty()) {
 			if(!sender.hasPermission("peco.command.balance.other")) {
 				messages.getAndSend(sender, "balance.other-balance");
 				return;
 			}
 			
-			name = args[0];
+			name = args.get(0);
 			
 			OfflinePlayer offline = Bukkit.getOfflinePlayer(name);
 			if(offline == null) {
@@ -141,9 +142,8 @@ public class CommandBalance extends ExtendedCommandExecutor {
 	}
 	
 	@Override
-	public List<String> executeTabCompletion(CommandSender sender, String[] args) {
-		if(args.length == 0) return null;
-		if(!validateTabCompletion(sender, args)) return null;
+	public List<String> executeTabCompletion(CommandSender sender, CommandArguments args) {
+		if(args.isEmpty() || !validateTabCompletion(sender, args)) return null;
 		
 		List<String> output = new ArrayList<>();
 		
@@ -151,7 +151,7 @@ public class CommandBalance extends ExtendedCommandExecutor {
 		if(sender.hasPermission("peco.command.balance.other")) {
 			Collection<? extends Player> players = Bukkit.getOnlinePlayers();
 			if(!players.isEmpty()) {
-				String arg = args[0].toLowerCase();
+				String arg = args.get(0).toLowerCase();
 				players.parallelStream()
 						.filter(p -> p.getName().toLowerCase().startsWith(arg))
 						.forEach(p -> output.add(p.getName()));
@@ -162,7 +162,7 @@ public class CommandBalance extends ExtendedCommandExecutor {
 		if(sender.hasPermission("peco.command.balance.offline")) {
 			OfflinePlayer[] players = Bukkit.getOfflinePlayers();
 			if(players.length != 0) {
-				String arg = args[0].toLowerCase();
+				String arg = args.get(0).toLowerCase();
 				Arrays.stream(players).parallel()
 						.filter(p -> !p.isOnline() && p.getName().toLowerCase().startsWith(arg))
 						.forEach(p -> output.add(p.getName()));

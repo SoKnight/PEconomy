@@ -29,6 +29,7 @@ public class PEconomy extends JavaPlugin {
 	protected CurrenciesManager currenciesManager;
 	
 	protected Configuration pluginConfig;
+	protected MessagesProvider messagesProvider;
 	protected Messages messages;
 	
 	@Override
@@ -60,7 +61,9 @@ public class PEconomy extends JavaPlugin {
 		api = new PEcoAPI(databaseManager, currenciesManager);
 		
 		// Trying to hook into PAPI and Vault
-		hookInto();
+		try {
+			hookInto();
+		} catch (Exception ignored) {}
 		
 		long time = System.currentTimeMillis() - start;
 		getLogger().info("Bootstrapped in " + time + " ms.");
@@ -68,18 +71,21 @@ public class PEconomy extends JavaPlugin {
 	
 	@Override
 	public void onDisable() {
-		if(databaseManager != null) databaseManager.shutdown();
+		if(databaseManager != null)
+			databaseManager.shutdown();
 	}
 	
-	public void refreshConfigs() {
+	private void refreshConfigs() {
 		this.pluginConfig = new Configuration(this, "config.yml");
 		this.pluginConfig.refresh();
 		
-		this.messages = new MessagesProvider(this, pluginConfig).getMessages();
+		this.messagesProvider = new MessagesProvider(this, pluginConfig);
+		this.messages = messagesProvider.getMessages();
+		
 		this.currenciesManager = new CurrenciesManager(this, pluginConfig);
 	}
 	
-	public void registerCommands() {
+	private void registerCommands() {
 		SubcommandHandler subcommandHandler = new SubcommandHandler(this, currenciesManager, databaseManager, pluginConfig, messages);
 		CommandBalance commandBalance = new CommandBalance(databaseManager, currenciesManager, pluginConfig, messages);
 		CommandPay commandPay = new CommandPay(databaseManager, currenciesManager, pluginConfig, messages);
@@ -98,7 +104,7 @@ public class PEconomy extends JavaPlugin {
 		pay.setTabCompleter(commandPay);
 	}
 	
-	private void hookInto() {
+	private void hookInto() throws Exception {
 		if(pluginConfig.getBoolean("hooks.papi")) {
 			if(Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
 				PEcoExpansion papiExpansion = new PEcoExpansion(this, databaseManager);
@@ -124,6 +130,13 @@ public class PEconomy extends JavaPlugin {
 				
 			} else getLogger().info("Couldn't find Vault to hook into, ignoring it.");
 		}
+	}
+	
+	public void refresh() {
+		pluginConfig.refresh();
+		messagesProvider.update(pluginConfig);
+		
+		registerCommands();
 	}
 	
 	/**

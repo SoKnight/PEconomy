@@ -10,6 +10,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import ru.soknight.lib.argument.CommandArguments;
 import ru.soknight.lib.command.ExtendedSubcommandExecutor;
 import ru.soknight.lib.configuration.Configuration;
 import ru.soknight.lib.configuration.Messages;
@@ -56,7 +57,7 @@ public class CommandTake extends ExtendedSubcommandExecutor {
 		String currencymsg = messages.get("error.unknown-currency");
 		
 		Validator permval = new PermissionValidator("peco.command.take", permmsg);
-		Validator argsval = new ArgsCountValidator(4, argsmsg);
+		Validator argsval = new ArgsCountValidator(3, argsmsg);
 		Validator walletval = new WalletValidator(databaseManager, walletmsg);
 		Validator amountval = new AmountValidator(amountmsg);
 		Validator currencyval = new CurrencyValidator(currenciesManager, currencymsg);
@@ -65,8 +66,8 @@ public class CommandTake extends ExtendedSubcommandExecutor {
 	}
 
 	@Override
-	public void executeCommand(CommandSender sender, String[] args) {
-		String owner = args[1], amstr = args[2], currencyid = args[3];
+	public void executeCommand(CommandSender sender, CommandArguments args) {
+		String owner = args.get(0), amstr = args.get(1), currencyid = args.get(2);
 		
 		CommandExecutionData data = new WalletExecutionData(sender, args, owner, currencyid, amstr);
 		if(!validateExecution(data)) return;
@@ -136,23 +137,23 @@ public class CommandTake extends ExtendedSubcommandExecutor {
 	}
 	
 	@Override
-	public List<String> executeTabCompletion(CommandSender sender, String[] args) {
+	public List<String> executeTabCompletion(CommandSender sender, CommandArguments args) {
 		if(!validateTabCompletion(sender, args)) return null;
 		
 		List<String> output = new ArrayList<>();
 		
-		if(args.length == 2) {
+		if(args.size() == 1) {
 			Collection<? extends Player> players = Bukkit.getOnlinePlayers();
 			if(!players.isEmpty()) {
-				String arg = args[1].toLowerCase();
+				String arg = args.get(0).toLowerCase();
 				players.parallelStream()
 						.filter(p -> p.getName().toLowerCase().startsWith(arg))
 						.forEach(p -> output.add(p.getName()));
 			}
-		} else if(args.length == 4) {
+		} else if(args.size() == 3) {
 			Set<String> currencies = this.currenciesManager.getCurrenciesIDs();
 			if(!currencies.isEmpty()) {
-				String arg = args[3].toLowerCase();
+				String arg = args.get(2).toLowerCase();
 				currencies.parallelStream()
 						.filter(c -> c.toLowerCase().startsWith(arg))
 						.forEach(c -> output.add(c));

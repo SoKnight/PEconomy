@@ -11,6 +11,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 
+import ru.soknight.lib.argument.CommandArguments;
 import ru.soknight.lib.command.ExtendedSubcommandExecutor;
 import ru.soknight.lib.configuration.Configuration;
 import ru.soknight.lib.configuration.Messages;
@@ -59,22 +60,22 @@ public class CommandInfo extends ExtendedSubcommandExecutor {
 		String argsmsg = messages.get("error.wrong-syntax");
 		
 		Validator permval = new PermissionValidator("peco.command.info", permmsg);
-		Validator argsval = new ArgsCountValidator(2, argsmsg);
+		Validator argsval = new ArgsCountValidator(1, argsmsg);
 		
 		super.addValidators(permval, argsval);
 	}
 
 	@Override
-	public void executeCommand(CommandSender sender, String[] args) {
+	public void executeCommand(CommandSender sender, CommandArguments args) {
 		if(!validateExecution(sender, args)) return;
 		
 		// Getting transaction ID
 		int id = 1;
 		
 		try {
-			id = Integer.parseInt(args[1]);
+			id = Integer.parseInt(args.get(0));
 		} catch (NumberFormatException e) {
-			messages.sendFormatted(sender, "error.arg-is-not-int", "%arg%", args[1]);
+			messages.sendFormatted(sender, "error.arg-is-not-int", "%arg%", args.get(0));
 			return;
 		}
 		

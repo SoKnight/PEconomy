@@ -32,7 +32,7 @@ public class DatabaseManager {
 	public void shutdown() {
 		try {
 			source.close();
-			logger.info("Database connection closed.");
+			logger.info("Disconnected from database.");
 		} catch (IOException e) {
 			logger.severe("Failed to close database connection: " + e.getLocalizedMessage());
 		}

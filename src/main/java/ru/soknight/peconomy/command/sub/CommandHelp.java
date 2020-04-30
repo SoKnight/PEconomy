@@ -2,6 +2,7 @@ package ru.soknight.peconomy.command.sub;
 
 import org.bukkit.command.CommandSender;
 
+import ru.soknight.lib.argument.CommandArguments;
 import ru.soknight.lib.command.ExtendedSubcommandExecutor;
 import ru.soknight.lib.command.help.HelpMessage;
 import ru.soknight.lib.command.help.HelpMessageFactory;
@@ -51,7 +52,7 @@ public class CommandHelp extends ExtendedSubcommandExecutor {
 	}
 
 	@Override
-	public void executeCommand(CommandSender sender, String[] args) {
+	public void executeCommand(CommandSender sender, CommandArguments args) {
 		if(!validateExecution(sender, args)) return;
 		
 		message.send(sender);

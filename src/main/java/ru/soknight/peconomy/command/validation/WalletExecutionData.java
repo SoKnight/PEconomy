@@ -4,6 +4,7 @@ import org.bukkit.command.CommandSender;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import ru.soknight.lib.argument.CommandArguments;
 import ru.soknight.lib.validation.CommandExecutionData;
 
 @Getter
@@ -11,7 +12,7 @@ import ru.soknight.lib.validation.CommandExecutionData;
 public class WalletExecutionData implements CommandExecutionData {
 
 	@Getter private final CommandSender sender;
-	@Getter private final String[] args;
+	@Getter private final CommandArguments args;
 
 	@Getter private final String owner;
 	@Getter private final String currency;

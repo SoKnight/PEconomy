@@ -13,6 +13,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import ru.soknight.lib.argument.CommandArguments;
 import ru.soknight.lib.command.ExtendedSubcommandExecutor;
 import ru.soknight.lib.configuration.Configuration;
 import ru.soknight.lib.configuration.Messages;
@@ -54,16 +55,16 @@ public class CommandHistory extends ExtendedSubcommandExecutor {
 		String argsmsg = messages.get("error.wrong-syntax");
 		
 		Validator permval = new PermissionValidator("peco.command.history", permmsg);
-		Validator argsval = new ArgsCountValidator(2, argsmsg);
+		Validator argsval = new ArgsCountValidator(1, argsmsg);
 		
 		super.addValidators(permval, argsval);
 	}
 
 	@Override
-	public void executeCommand(CommandSender sender, String[] args) {
+	public void executeCommand(CommandSender sender, CommandArguments args) {
 		if(!validateExecution(sender, args)) return;
 		
-		String owner = args[1];
+		String owner = args.get(0);
 		boolean other = false;
 		
 		// Check for trying to see other history
@@ -90,11 +91,11 @@ public class CommandHistory extends ExtendedSubcommandExecutor {
 		
 		// Getting target page
 		int page = 1;
-		if(args.length > 2) {
+		if(args.size() > 1) {
 			try {
-				page = Integer.parseInt(args[2]);
+				page = Integer.parseInt(args.get(1));
 			} catch (NumberFormatException e) {
-				messages.sendFormatted(sender, "error.arg-is-not-int", "%arg%", args[2]);
+				messages.sendFormatted(sender, "error.arg-is-not-int", "%arg%", args.get(1));
 				return;
 			}
 		}
@@ -173,9 +174,8 @@ public class CommandHistory extends ExtendedSubcommandExecutor {
 	}
 	
 	@Override
-	public List<String> executeTabCompletion(CommandSender sender, String[] args) {
-		if(args.length != 2) return null;
-		if(!validateTabCompletion(sender, args)) return null;
+	public List<String> executeTabCompletion(CommandSender sender, CommandArguments args) {
+		if(args.size() != 1 || !validateTabCompletion(sender, args)) return null;
 		
 		List<String> output = new ArrayList<>();
 		
@@ -183,7 +183,7 @@ public class CommandHistory extends ExtendedSubcommandExecutor {
 		if(sender.hasPermission("peco.command.history.other")) {
 			Collection<? extends Player> players = Bukkit.getOnlinePlayers();
 			if(!players.isEmpty()) {
-				String arg = args[1].toLowerCase();
+				String arg = args.get(0).toLowerCase();
 				players.parallelStream()
 						.filter(p -> p.getName().toLowerCase().startsWith(arg))
 						.forEach(p -> output.add(p.getName()));
@@ -192,7 +192,7 @@ public class CommandHistory extends ExtendedSubcommandExecutor {
 			if(sender.hasPermission("peco.command.history.offline")) {
 				OfflinePlayer[] oplayers = Bukkit.getOfflinePlayers();
 				if(oplayers.length != 0) {
-					String arg = args[1].toLowerCase();
+					String arg = args.get(0).toLowerCase();
 					Arrays.stream(oplayers).parallel()
 							.filter(p -> !p.isOnline() && p.getName().toLowerCase().startsWith(arg))
 							.forEach(p -> output.add(p.getName()));

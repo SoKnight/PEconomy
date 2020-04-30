@@ -2,6 +2,7 @@ package ru.soknight.peconomy.command.sub;
 
 import org.bukkit.command.CommandSender;
 
+import ru.soknight.lib.argument.CommandArguments;
 import ru.soknight.lib.command.ExtendedSubcommandExecutor;
 import ru.soknight.lib.configuration.Messages;
 import ru.soknight.lib.validation.validator.PermissionValidator;
@@ -27,11 +28,10 @@ public class CommandReload extends ExtendedSubcommandExecutor {
 	}
 
 	@Override
-	public void executeCommand(CommandSender sender, String[] args) {
+	public void executeCommand(CommandSender sender, CommandArguments args) {
 		if(!validateExecution(sender, args)) return;
 		
-		plugin.refreshConfigs();
-		plugin.registerCommands();
+		plugin.refresh();
 		
 		messages.getAndSend(sender, "reload-success");
 	}

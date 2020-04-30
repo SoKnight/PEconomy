@@ -11,6 +11,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import ru.soknight.lib.argument.CommandArguments;
 import ru.soknight.lib.command.ExtendedCommandExecutor;
 import ru.soknight.lib.configuration.Configuration;
 import ru.soknight.lib.configuration.Messages;
@@ -68,8 +69,8 @@ public class CommandPay extends ExtendedCommandExecutor {
 	}
 	
 	@Override
-	public void executeCommand(CommandSender sender, String[] args) {
-		String owner = args[0], amstr = args[1], currencyid = args[2];
+	public void executeCommand(CommandSender sender, CommandArguments args) {
+		String owner = args.get(0), amstr = args.get(1), currencyid = args.get(2);
 		
 		CommandExecutionData data = new WalletExecutionData(sender, args, owner, currencyid, amstr);
 		if(!validateExecution(data)) return;
@@ -175,32 +176,32 @@ public class CommandPay extends ExtendedCommandExecutor {
 	}
 	
 	@Override
-	public List<String> executeTabCompletion(CommandSender sender, String[] args) {
+	public List<String> executeTabCompletion(CommandSender sender, CommandArguments args) {
 		if(!validateTabCompletion(sender, args)) return null;
 		if(!(sender instanceof Player)) return null;
 		
 		List<String> output = new ArrayList<>();
 		
-		if(args.length == 1) {
+		if(args.size() == 1) {
 			if(!sender.hasPermission("peco.command.pay.offline")) {
 				Collection<? extends Player> players = Bukkit.getOnlinePlayers();
-				String arg = args[0].toLowerCase();
+				String arg = args.get(0).toLowerCase();
 				players.parallelStream()
 						.filter(p -> p.getName().toLowerCase().startsWith(arg))
 						.forEach(p -> output.add(p.getName()));
 			} else {
 				OfflinePlayer[] players = Bukkit.getOfflinePlayers();
 				if(players.length != 0) {
-					String arg = args[0].toLowerCase();
+					String arg = args.get(0).toLowerCase();
 					Arrays.stream(players).parallel()
 							.filter(p -> p.getName().toLowerCase().startsWith(arg))
 							.forEach(p -> output.add(p.getName()));
 				}
 			}
-		} else if(args.length == 3) {
+		} else if(args.size() == 3) {
 			Set<String> currencies = this.currenciesManager.getCurrenciesIDs();
 			if(!currencies.isEmpty()) {
-				String arg = args[2].toLowerCase();
+				String arg = args.get(2).toLowerCase();
 				currencies.parallelStream()
 						.filter(c -> c.toLowerCase().startsWith(arg))
 						.forEach(c -> output.add(c));
