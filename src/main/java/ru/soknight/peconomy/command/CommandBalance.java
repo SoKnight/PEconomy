@@ -1,175 +1,131 @@
 package ru.soknight.peconomy.command;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 
 import ru.soknight.lib.argument.CommandArguments;
-import ru.soknight.lib.command.ExtendedCommandExecutor;
+import ru.soknight.lib.command.preset.standalone.PermissibleCommand;
 import ru.soknight.lib.configuration.Configuration;
 import ru.soknight.lib.configuration.Messages;
-import ru.soknight.lib.validation.validator.PermissionValidator;
-import ru.soknight.lib.validation.validator.Validator;
-import ru.soknight.peconomy.command.tool.AmountFormatter;
 import ru.soknight.peconomy.configuration.CurrenciesManager;
-import ru.soknight.peconomy.configuration.CurrencyInstance;
 import ru.soknight.peconomy.database.DatabaseManager;
-import ru.soknight.peconomy.database.Wallet;
+import ru.soknight.peconomy.util.AmountFormatter;
 
-public class CommandBalance extends ExtendedCommandExecutor {
-	
-	private final DatabaseManager databaseManager;
-	private final CurrenciesManager currenciesManager;
-	
-	private final Configuration config;
-	private final Messages messages;
-	
-	public CommandBalance(DatabaseManager databaseManager, CurrenciesManager currenciesManager,
-			Configuration config, Messages messages) {
-		super(messages);
-		
-		this.databaseManager = databaseManager;
-		this.currenciesManager = currenciesManager;
-		
-		this.config = config;
-		this.messages = messages;
-		
-		String permmsg = messages.get("error.no-permissions");
-		
-		Validator permval = new PermissionValidator("peco.command.balance", permmsg);
-		
-		super.addValidators(permval);
-	}
+public class CommandBalance extends PermissibleCommand {
+    
+    private final Configuration config;
+    private final Messages messages;
+    
+    private final DatabaseManager databaseManager;
+    private final CurrenciesManager currenciesManager;
+    
+    public CommandBalance(
+            Configuration config, Messages messages,
+            DatabaseManager databaseManager, CurrenciesManager currenciesManager
+    ) {
+        super("balance", "peco.command.balance", messages);
+        
+        this.config = config;
+        this.messages = messages;
+        
+        this.databaseManager = databaseManager;
+        this.currenciesManager = currenciesManager;
+    }
 
-	@Override
-	public void executeCommand(CommandSender sender, CommandArguments args) {
-		if(!validateExecution(sender, args)) return;
-		
-		String name = sender.getName();
-		boolean other = false;
-		
-		// Other balance checking execution
-		if(!args.isEmpty()) {
-			if(!sender.hasPermission("peco.command.balance.other")) {
-				messages.getAndSend(sender, "balance.other-balance");
-				return;
-			}
-			
-			name = args.get(0);
-			
-			OfflinePlayer offline = Bukkit.getOfflinePlayer(name);
-			if(offline == null) {
-				messages.sendFormatted(sender, "error.unknown-wallet", "%player%", name);
-				return;
-			}
-			
-			if(!offline.isOnline()) {
-				messages.getAndSend(sender, "balance.offline-balance");
-				return;
-			}
-			
-			if(!name.equals(sender.getName()))
-				other = true;
-		} else {
-			if(!(sender instanceof Player)) {
-				messages.getAndSend(sender, "error.only-for-players");
-				return;
-			}
-		}
-		
-		Wallet wallet = databaseManager.getWallet(name);
-		if(wallet == null) {
-			messages.sendFormatted(sender, "error.unknown-wallet", "%player%", name);
-			return;
-		}
-		
-		String format = messages.get("balance.format");
-		Map<String, Float> wallets = wallet.getWallets();
-		
-		if(wallets == null || wallets != null && wallets.isEmpty()) {
-			if(other)
-				messages.sendFormatted(sender, "balance.empty-other", "%player%", name);
-			else messages.getAndSend(sender, "balance.empty-self");
-			return;
-		}
-		
-		List<String> balances = new ArrayList<>();
-		
-		wallets.forEach((c, a) -> {
-			CurrencyInstance instance = currenciesManager.getCurrency(c);
-			String symbol;
-			
-			if(instance == null) {
-				if(config.getBoolean("hide-unknown-currencies")) return;
-				else symbol = "N/A";
-			} else symbol = instance.getSymbol();
-			
-			String amount = AmountFormatter.format(a);
-			balances.add(messages.format(format, "%amount%", amount, "%currency%", symbol));
-		});
-		
-		if(balances.isEmpty()) {
-			if(other)
-				messages.sendFormatted(sender, "balance.empty-other", "%player%", name);
-			else messages.getAndSend(sender, "balance.empty-self");
-		}
-		
-		String balance;
-		if(balances.size() == 1)
-			balance = balances.get(0);
-		else {
-			StringBuilder builder = new StringBuilder(balances.get(0));
-			String separator = messages.get("balance.separator");
-			
-			for(int i = 1; i < balances.size(); i++) {
-				builder.append(separator);
-				builder.append(balances.get(i));
-			}
-			
-			balance = builder.toString();
-		}
-		
-		if(other)
-			messages.sendFormatted(sender, "balance.other", "%player%", name, "%balance%", balance);
-		else messages.sendFormatted(sender, "balance.self", "%balance%", balance);
-	}
-	
-	@Override
-	public List<String> executeTabCompletion(CommandSender sender, CommandArguments args) {
-		if(args.isEmpty() || !validateTabCompletion(sender, args)) return null;
-		
-		List<String> output = new ArrayList<>();
-		
-		// Adds other online players if interaction with them is permitted
-		if(sender.hasPermission("peco.command.balance.other")) {
-			Collection<? extends Player> players = Bukkit.getOnlinePlayers();
-			if(!players.isEmpty()) {
-				String arg = args.get(0).toLowerCase();
-				players.parallelStream()
-						.filter(p -> p.getName().toLowerCase().startsWith(arg))
-						.forEach(p -> output.add(p.getName()));
-			}
-		}
-		
-		// Adds other offline players if interaction with them is permitted
-		if(sender.hasPermission("peco.command.balance.offline")) {
-			OfflinePlayer[] players = Bukkit.getOfflinePlayers();
-			if(players.length != 0) {
-				String arg = args.get(0).toLowerCase();
-				Arrays.stream(players).parallel()
-						.filter(p -> !p.isOnline() && p.getName().toLowerCase().startsWith(arg))
-						.forEach(p -> output.add(p.getName()));
-			}
-		}
-		
-		return output;
-	}
-	
+    @Override
+    public void executeCommand(CommandSender sender, CommandArguments args) {
+        String target = null;
+        boolean other = false;
+        
+        if(args.isEmpty()) {
+            if(!isPlayer(sender)) {
+                messages.getAndSend(sender, "error.wrong-syntax");
+                return;
+            }
+            
+            target = sender.getName();
+        } else {
+            target = args.get(0);
+            
+            if(isPlayer(sender) && !target.equals(sender.getName())) {
+                if(!sender.hasPermission("peco.command.balance.other"))
+                    target = sender.getName();
+                else
+                    other = true;
+            }
+        }
+        
+        String walletHolder = target;
+        boolean forOtherPlayer = other;
+        
+        databaseManager.getWallet(walletHolder).thenAcceptAsync(wallet -> {
+            if(wallet == null || wallet.getWallets().isEmpty()) {
+                if(forOtherPlayer)
+                    messages.sendFormatted(sender, "balance.failed.empty.other", "%player%", walletHolder);
+                else
+                    messages.getAndSend(sender, "balance.failed.empty.self");
+                return;
+            }
+            
+            // formatting balances string from wallets balances
+            Map<String, Float> wallets = wallet.getWallets();
+            String balances = wallets.entrySet()
+                    .stream()
+                    .filter(e -> shouldShowBalance(e.getKey()))
+                    .sorted((e1, e2) -> e1.getKey().compareToIgnoreCase(e2.getKey()))
+                    .map(e -> messages.getFormatted("balance.format",
+                            "%amount%", AmountFormatter.format(e.getValue()),
+                            "%currency%", getCurrencySymbol(e.getKey())))
+                    .collect(Collectors.joining(messages.get("balance.separator")));
+            
+            // balances string may be empty
+            if(balances.isEmpty()) {
+                if(forOtherPlayer)
+                    messages.sendFormatted(sender, "balance.failed.empty.other", "%player%", walletHolder);
+                else
+                    messages.getAndSend(sender, "balance.failed.empty.self");
+                return;
+            }
+            
+            // overwise we showing the wallet's balance
+            if(forOtherPlayer)
+                messages.sendFormatted(sender, "balance.success.other",
+                        "%player%", walletHolder,
+                        "%balance%", balances
+                );
+            else
+                messages.sendFormatted(sender, "balance.success.self",
+                        "%balance%", balances
+                );
+        });
+    }
+    
+    @Override
+    public List<String> executeTabCompletion(CommandSender sender, CommandArguments args) {
+        if(args.size() != 1 || !sender.hasPermission("peco.command.balance.other")) return null;
+        
+        String arg = getLastArgument(args, true);
+        return Bukkit.getOnlinePlayers().stream()
+                .map(OfflinePlayer::getName)
+                .filter(n -> n.toLowerCase().startsWith(arg))
+                .collect(Collectors.toList());
+    }
+    
+    private boolean shouldShowBalance(String currencyId) {
+        if(currenciesManager.isCurrency(currencyId)) return true;
+        
+        return !config.getBoolean("hide-unknown-currencies");
+    }
+    
+    private String getCurrencySymbol(String currencyId) {
+        if(!currenciesManager.isCurrency(currencyId)) return "N/A";
+        
+        return currenciesManager.getCurrency(currencyId).getSymbol();
+    }
+    
 }

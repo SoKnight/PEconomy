@@ -3,29 +3,35 @@ main: ru.soknight.peconomy.PEconomy
 author: SoKnight
 version: ${project.version}
 depend: [SKLibrary]
-softdepend: [Vault]
+softdepend: [PlaceholderAPI, Vault]
 api-version: 1.13
+
 commands:
-  peco:
+  peconomy:
     aliases: [eco, economy, peco]
     description: Main plugin command
-    usage: /peco help
+    usage: /peconomy help
   balance:
     aliases: [bal, money]
-    description: See your or player's balance
+    description: See your or other player's balance
     usage: /balance (player)
   pay:
     aliases: [transfer]
     description: Transfer money to other wallet
     usage: /pay <player> <amount> <currency>
+
 permissions:
+  #  +------------+
+  #  |  Commands  |
+  #  +------------+
+
   # Allows to see /peco help page
   peco.command.help:
     default: true
 
   # Allows to see transactions history (own)
   peco.command.history:
-    default: op
+    default: true
 
   # Allows to see all history include other online wallet owner
   peco.command.history.other:
@@ -33,29 +39,15 @@ permissions:
     children:
       peco.command.history: true
 
-  # Allows to see all history include other offline wallet owner
-  peco.command.history.offline:
-    default: op
-    children:
-      peco.command.history: true
-      peco.command.history.other: true
-
   # Allows to see information about transaction (own)
   peco.command.info:
-    default: op
+    default: true
 
   # Allows to see info about transactions of other online wallet owner
   peco.command.info.other:
     default: op
     children:
       peco.command.info: true
-
-  # Allows to see info about transactions of other offline waller owner too
-  peco.command.info.offline:
-    default: op
-    children:
-      peco.command.info: true
-      peco.command.info.other: true
 
   # Allows to use /peco add command
   peco.command.add:
@@ -87,20 +79,13 @@ permissions:
     children:
       peco.command.balance: true
 
-  # Allows to see balance of other offline wallet owner too
-  peco.command.balance.offline:
-    default: op
-    children:
-      peco.command.balance: true
-      peco.command.balance.other: true
-
   # Allows to transfer money to wallet of online player
   peco.command.pay:
     default: true
 
-  # Allows to transfer money to wallet of offline player too
-  peco.command.pay.offline:
-    default: op
+  #  +--------+
+  #  |  Misc  |
+  #  +--------+
 
   # Allows to see hided by default transaction source
   peco.transaction.sourcespy:

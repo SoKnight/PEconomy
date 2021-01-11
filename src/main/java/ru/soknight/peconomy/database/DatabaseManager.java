@@ -3,142 +3,131 @@ package ru.soknight.peconomy.database;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
-import com.j256.ormlite.stmt.QueryBuilder;
-import com.j256.ormlite.stmt.Where;
 import com.j256.ormlite.support.ConnectionSource;
 
 import ru.soknight.peconomy.PEconomy;
+import ru.soknight.peconomy.database.model.TransactionModel;
+import ru.soknight.peconomy.database.model.WalletModel;
 
 public class DatabaseManager {
-	
-	private final Logger logger;
-	private final ConnectionSource source;
-	
-	private final Dao<Wallet, String> ownersDao;
-	private final Dao<Transaction, Integer> transactionsDao;
-	
-	public DatabaseManager(PEconomy plugin, Database database) throws SQLException {
-		this.logger = plugin.getLogger();
-		this.source = database.getConnection();
-		
-		this.ownersDao = DaoManager.createDao(source, Wallet.class);
-		this.transactionsDao = DaoManager.createDao(source, Transaction.class);
-	}
-	
-	public void shutdown() {
-		try {
-			source.close();
-			logger.info("Disconnected from database.");
-		} catch (IOException e) {
-			logger.severe("Failed to close database connection: " + e.getLocalizedMessage());
-		}
-	}
-	
-	/*
-	 * Players wallets
-	 */
-	
-	public boolean createWallet(Wallet owner) {
-		try {
-			return this.ownersDao.create(owner) != 0;
-		} catch (SQLException e) {
-			logger.severe("Failed to create wallet of player '" + owner.getOwner() + "': " + e.getMessage());
-			return false;
-		}
-	}
-	
-	public Wallet getWallet(String name) {
-		try {
-			return this.ownersDao.queryForId(name);
-		} catch (SQLException e) {
-			logger.severe("Failed to get wallet for player '" + name + "': " + e.getMessage());
-			return null;
-		}
-	}
-	
-	public int getWalletsCount() {
-		try {
-			return this.ownersDao.queryForAll().size();
-		} catch (SQLException e) {
-			logger.severe("Failed to get wallets count: " + e.getMessage());
-			return 0;
-		}
-	}
-	
-	public boolean hasWallet(String name) {
-		return getWallet(name) != null;
-	}
-	
-	public boolean transferWallet(Wallet owner, String name) {
-		try {
-			return this.ownersDao.updateId(owner, name) != 0;
-		} catch (SQLException e) {
-			logger.severe("Failed to transfer wallet of player '" + owner.getOwner() + "' to '" + name + "': "
-					+ e.getMessage());
-			return false;
-		}
-	}
-	
-	public boolean updateWallet(Wallet wallet) {
-		try {
-			return this.ownersDao.update(wallet) != 0;
-		} catch (SQLException e) {
-			logger.severe("Failed to update wallet of player '" + wallet.getOwner() + "': " + e.getMessage());
-			return false;
-		}
-	}
-	
-	/*
-	 * Transactions
-	 */
-	
-	public Transaction getTransactionByID(int id) {
-		try {
-			return this.transactionsDao.queryForId(id);
-		} catch (SQLException e) {
-			logger.severe("Failed to get transaction by ID #" + id + ": " + e.getMessage());
-			return null;
-		}
-	}
-	
-//	public List<Transaction> getAllTransactions() {
-//		try {
-//			return this.transactionsDao.queryForAll();
-//		} catch (SQLException e) {
-//			logger.severe("Failed to get all transactions: " + e.getMessage());
-//			return null;
-//		}
-//	}
-	
-	public List<Transaction> getWalletTransactions(String owner) {
-		try {
-			QueryBuilder<Transaction, Integer> builder = transactionsDao.queryBuilder();
-			Where<Transaction, Integer> where = builder.where();
-			
-			where.eq("owner", owner);
-			
-			return builder.query();
-		} catch (SQLException e) {
-			logger.severe("Failed to get transactions for " + owner + "'s wallet: " + e.getMessage());
-			return null;
-		}
-	}
-	
-	public boolean hasTransactionWithID(int id) {
-		return getTransactionByID(id) != null;
-	}
-	
-	public boolean saveTransaction(Transaction transaction) {
-		try {
-			return this.transactionsDao.create(transaction) != 0;
-		} catch (SQLException e) {
-			logger.severe("Failed to save transaction: " + e.getMessage());
-			return false;
-		}
-	}
-	
+    
+    private final Logger logger;
+    private final ConnectionSource connection;
+    
+    private final Dao<WalletModel, String> walletsDao;
+    private final Dao<TransactionModel, Integer> transactionsDao;
+    
+    public DatabaseManager(PEconomy plugin, Database database) throws SQLException {
+        this.logger = plugin.getLogger();
+        this.connection = database.getConnection();
+        
+        this.walletsDao = DaoManager.createDao(connection, WalletModel.class);
+        this.transactionsDao = DaoManager.createDao(connection, TransactionModel.class);
+    }
+    
+    public void shutdown() {
+        try {
+            if(connection != null)
+                connection.close();
+        } catch (IOException ignored) {}
+    }
+    
+    /*********************
+     *  Players wallets  *
+     ********************/
+    
+    public CompletableFuture<WalletModel> getWallet(String player) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                return walletsDao.queryForId(player);
+            } catch (SQLException e) {
+                logger.severe("Failed to query wallet for player " + player + ": " + e.getMessage());
+                return null;
+            }
+        });
+    }
+    
+    public CompletableFuture<Long> getWalletsCount() {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                return walletsDao.queryBuilder().countOf();
+            } catch (SQLException e) {
+                logger.severe("Failed to query wallets amount: " + e.getMessage());
+                return null;
+            }
+        });
+    }
+    
+    public CompletableFuture<Boolean> hasWallet(String player) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                return walletsDao.idExists(player);
+            } catch (SQLException e) {
+                logger.severe("Failed to check wallet exists for player " + player + ": " + e.getMessage());
+                return false;
+            }
+        });
+    }
+    
+    public CompletableFuture<Void> saveWallet(WalletModel wallet) {
+        return CompletableFuture.runAsync(() -> {
+            try {
+                walletsDao.createOrUpdate(wallet);
+            } catch (SQLException e) {
+                logger.severe("Failed to save wallet for player " + wallet.getWalletHolder() + ": " + e.getMessage());
+            }
+        });
+    }
+    
+    public CompletableFuture<Void> transferWallet(WalletModel wallet, String player) {
+        return CompletableFuture.runAsync(() -> {
+            try {
+                walletsDao.updateId(wallet, player);
+            } catch (SQLException e) {
+                logger.severe("Failed to transfer wallet to player " + player + ": " + e.getMessage());
+            }
+        });
+    }
+    
+    /******************
+     *  Transactions  *
+     *****************/
+    
+    public CompletableFuture<TransactionModel> getTransactionByID(int id) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                return this.transactionsDao.queryForId(id);
+            } catch (SQLException e) {
+                logger.severe("Failed to query transaction by ID #" + id + ": " + e.getMessage());
+                return null;
+            }
+        });
+    }
+    
+    public CompletableFuture<List<TransactionModel>> getTransactionHistory(String owner) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                return transactionsDao.queryBuilder().where().eq("owner", owner).query();
+            } catch (SQLException e) {
+                logger.severe("Failed to query transaction history for " + owner + ": " + e.getMessage());
+                return null;
+            }
+        });
+    }
+    
+    public CompletableFuture<Void> saveTransaction(TransactionModel transaction) {
+        return CompletableFuture.runAsync(() -> {
+            try {
+                transactionsDao.createOrUpdate(transaction);
+            } catch (SQLException e) {
+                logger.severe("Failed to save transaction: " + e.getMessage());
+            }
+        });
+    }
+    
 }

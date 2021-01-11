@@ -21,142 +21,153 @@
 #
 # Часто встречаемые ошибки
 error:
-  no-args: "&cУкажите команду или используйте '/peco help' для помощи."
-  unknown-subcommand: "&cНеизвестная команда, вы можете посмотреть '/peco help' для помощи."
+  no-args: "&cУкажите подкоманду или используйте '/peco help' для помощи."
+  unknown-subcommand: "&cНеизвестная подкоманда, вы можете посмотреть '/peco help' для помощи."
   wrong-syntax: "&cНеверное использование команды, вы можете посмотреть '/peco help' для помощи."
   only-for-players: "&cТолько игроки могут использовать эту команду."
   no-permissions: "&cНедостаточно прав."
-  arg-is-not-float: "&cАргумент '%argument%' должен быть положительным целочисленным или дробным числом."
-  unknown-currency: "&cНеизвестная валюта '%currency%'."
-  unknown-wallet: "&cИгрок '%player%' не имеет кошелька."
+  arg-is-not-float: "&cАргумент '%arg%' должен быть положительным целым или дробным числом."
+  arg-is-not-int: "&cАргумент '%arg%' должен быть положительным целым числом."
+  unknown-currency: "&cВалюта '%currency%' не существует."
+  unknown-wallet: "&cИгрок '%player%' ещё не имеет кошелька."
 
-# Operations which used in other messages
+# Операции, используемые в других сообщениях
 operation:
-  increase: "&a»"
-  decrease: "&c»"
+  increase: '&a»'
+  decrease: '&c»'
 
 # Balance add
 add:
-  limit: "&cУже есть %amount%%currency% на балансе игрока %player% и после этой операции его баланс привысит лимит в %limit%%currency%."
-  other: "&fДобавлено &b%amount%%currency% &fна баланс игрока &b%player%&f: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)"
-  self: "&6| \n&6| &fВы получили &b%amount%%currency% &fна ваш баланс: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)\n&6| "
+  failed:
+    limit-reached: "&cДанная транзакция может превысить лимит — %limit%%currency%."
+  success:
+    operator: "&fДобавлено &b%amount%%currency% &fна счёт &b%player%&f: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)"
+    holder: '&6| &fВаш счёт пополнен на &b%amount%%currency%&f: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)'
 
 # Balance set
 set:
-  limit: "&cУказанная сумма превышает лимит для этой валюты размером %limit%%currency%."
-  already: "&cНа балансе игрока %player% уже %amount%%currency%."
-  other: "&fИзменён баланс игрока &b%player%&f: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)"
-  self: "&6| \n&6| &fВаш баланс изменён: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)\n&6| "
+  failed:
+    limit-reached: "&cДанная транзакция может превысить лимит — %limit%%currency%."
+    already-equals: "&cНа счёте %player% уже есть %amount%%currency%."
+  success:
+    operator: "&fИзменён счёт &b%player%: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)"
+    holder: '&6| &fВаш счёт был изменён: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)'
 
 # Balance reset
 reset:
-  already: "&cБаланс игрока %player% для этой валюты итак пустой."
-  other: "&fАннулирован баланс игрока &b%player%&f: &b%from%%currency% %operation% &b0%currency% &7(#%id%)"
-  self: "&6| \n&6| &fВаш баланс был аннулирован: &b%from%%currency% %operation% &b0%currency% &7(#%id%)\n&6| "
+  failed:
+    already: "&cСчёт для этой валюты уже пуст на кошельке %player%."
+  success:
+    operator: "&fСчёт &b%player% &fобнулён: &b%from%%currency% %operation% &b0%currency% &7(#%id%)"
+    holder: '&6| &fВаш счёт был обнулён: &b%from%%currency% %operation% &b0%currency% &7(#%id%)'
 
 # Balance take
 take:
-  not-enough: "&cЕсть только %amount%%currency% на балансе игрока %player%, что меньше запрашиваемых %requested%%currency%."
-  other: "&fСнято &b%amount%%currency% &fс баланса игрока &b%player%&f: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)"
-  self: "&6| \n&6| &fСнято &b%amount%%currency% &fс вашего баланса: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)\n&6| "
+  failed:
+    not-enough: "&cНа счёте %player% только %amount%%currency%, что меньше запрошенных %requested%%currency%."
+  success:
+    operator: "&fСнято &b%amount%%currency% &fсо счёта &b%player%&f: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)"
+    holder: '&6| &fС вашего счёта снято &b%amount%%currency%&f: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)'
 
-# Balance info
+# Информация о балансе
 balance:
+  failed:
+    empty:
+      other: "&cКошелёк %player% пуст :("
+      self: "&cВаш кошелёк пуст :("
+  success:
+    other: "&fБаланс кошелька %player%: &r%balance%"
+    self: "&fВаш баланс: &r%balance%"
+
   # 'format' and 'separator' is a backend values which will be used for formatting value for %balance% placeholder
   # 'separator' separates currencies amounts if there are several of them
   # By default plugin will display empty currencies wallets, but you can disable it in config.yml
   format: "&b%amount%%currency%"
   separator: "&f, "
-  # No children permissions
-  other-balance: "&cНедостаточно прав для просмотра баланса других игроков."
-  offline-balance: "&cНедостаточно прав для просмотра баланса игроков оффлайн."
-  # Empty wallet
-  empty-other: "&cКошелёк %player% пуст :("
-  empty-self: "&cВаш кошелёк пуст :("
-  # Successfully executed
-  other: "&fБаланс кошелька игрока %player%: &r%balance%"
-  self: "&fБаланс вашего кошелька: &r%balance%"
 
-# Money sharing
+# Переводы между игроками
 pay:
-  to-self: "&cЭто.. бесполезно.. не так ли?"
-  offline-pay: "&cНедостаточно прав для перевода средств на счёт игрока оффлайн."
-  not-enough: "&cЕсть только %amount%%currency% на вашем балансе, что меньше запрашиваемых %requested%%currency%."
-  limit: "&cЭтот перевод отмёнен, поскольку превышает лимит для этой валюты (%limit%%currency%)."
-  other: "&fОтправлено &b%amount%%currency% &fна счёт &b%player% &f, баланс: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)"
-  self: "&6| \n&6| &fВы получили перевод в &b%amount%%currency% &fот &b%source%&f: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)"
+  failed:
+    to-self: "&cЭто бесполезно, разве нет?"
+    not-enough: "&cНа вашем счёте только %amount%%currency%, что меньше запрошенных %requested%%currency%."
+    limit-reached: "&cДанная транзакция может превысить лимит (%limit%%currency%) для получателя платежа."
+  success:
+    sender: "&fОтправлено &b%amount%%currency% &fна кошелёк &b%receiver%&f, ваш баланс изменён: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)"
+    receiver: '&6| &fВы получили перевод &b%amount%%currency% &fот &b%sender%&f: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)'
 
-# Transactions history
+# История транзакций
 history:
-  # No children permissions
-  other-history: "&cНедостаточно прав для просмотра истории транзакций другого игрока."
-  offline-history: "&cНедостаточно прав для просмотра истории транзакций игрока оффлайн."
-  # Empty output
-  empty-self: "&cВаша история транзакций пуста."
-  empty-other: "&cИстория транзакций кошелька %player% пуста."
-  empty-page: "&cСтраница истории %page% пуста."
-  # Successed
-  header-other: "   &7История транзакций для %player%"
-  header-self: "   &7Ваша история транзакций"
+  failed:
+    no-transactions: '&cТранзакции не найдены.'
+    page-is-empty: "&cСтраница %page% пуста."
+
+  header:
+    other: "   &7История транзакций %player% [%page%/%total%]"
+    self: "   &7Ваша история транзакций [%page%/%total%]"
   body: " &7#%id% &f%date%: &b%from%%currency% %operation% &b%to%%currency% &7(%action%)"
-  footer-other: " "
-  footer-self: " "
-
-# Transaction info
-info:
-  not-found: "&cТранзакция #%id% не найдена."
-  # No children permissions
-  other-info: "&cНедостаточно прав для просмотра информации о транзакции другого кошелька."
-  offline-info: "&cНедостаточно прав для просмотра информации о транзакции кошелька оффлайн игрока."
-  # Successed
-  header: "   &7Информация о транзакции"
   footer: " "
-  # You can change sequence of messages
-  list:
-    id: " &fИдентификатор: &b#%id%"
-    owner: " &fВладелец кошелька: &b%owner%"
-    action: " &fДействие: &b%action%"
-    pre: " &fБаланс до: &b%pre%%symbol%"
-    post: " &fБаланс после: &b%post%%symbol%"
-    currency: " &fОперируемая валюта: &b%currency% (%symbol%)"
-    date: " &fДата: &b%date%"
 
-# Actions for %action% placeholder
-# You can use placeholder %source% to display source of action (other player, sender of command)
-# * Source displaying will display all players (and admins, which may be wanted silent transaction)
+  # Кол-во элементов на одной странице
+  page-size: 10
+
+# Информация о транзакции
+info:
+  failed:
+    unknown-id: "&cТранзакция #%id% не существует."
+
+  success: |2-
+    &7   Информация о транзакции
+    &f Идентификатор: &b#%id%
+    &f Держатель счёта: &b%owner%
+    &f Действие: &b%action%
+    &f Баланс до операции: &b%pre%%symbol%
+    &f Баланс после операции: &b%post%%symbol%
+    &f Оперируемая валюта: &b%currency% (%symbol%)
+    &f Дата: &b%date%
+    &f
+
+# Действия для плейсхолдера %action%
+# (?) Вы можете использовать плейсхолдер %source% для обозначения источника действия (другого игрока, отправителя команды)
 action:
   add: "Добавлено администратором"
   set: "Изменено администратором"
   reset: "Аннулировано администратором"
   take: "Снято администратором"
-  pay: "Перевод от %source%"
+  payment: 
+    incoming: "Перевод от %source%"
+    outcoming: "Перевод игроку %source%"
+  failed: "&cПровалена"
 
-# Just plugin reloaded message (for /peco reload)
+# Значение источника (см. action) для отправителя консоли
+# (?) Например: 0.0 » 0.2 (добавлено #console), где #console - оператор транзакции
+console-operator: "#console"
+
+# Сообщение о перезагрузке плагина (для /peco reload)
 reload-success: "&fPEconomy перезагружен."
 
-# Help messages
+# Мануал со списком команд
 help:
   header: "   &7Помощь по PEconomy"
   body: " &b/%command% &f&l- &f%description%"
   footer: " "
-  # Descriptions for commands
+  # Описания команд
   descriptions:
     help: 'Показать эту страницу'
-    balance: 'Показать баланс кошелька'
-    pay: 'Перевести сумму'
+    balance: 'Показать баланс всех кошельков'
+    pay: 'Перевести деньги игроку'
+    add: 'Добавить сумму на валютный счёт'
+    set: 'Изменить валютный счёт'
+    reset: 'Аннулировать валютный счёт'
+    take: 'Снять сумму с валютного счёта'
     history: 'Показать историю транзакций'
     info: 'Показать информацию о транзакции'
-    add: 'Добавить сумму на счёт'
-    set: 'Изменить баланс счёта'
-    reset: 'Аннулировать счёт'
-    take: 'Снять сумму со счёта'
     reload: 'Перезагрузить конфигурацию'
-  # Placeholders for commands
-  # Will be used after subcommands if it is needed
-  placeholders:
-    player: '<игрок>'
-    player-optional: '(игрок)'
+  # Аргументы для команд
+  # Будут использованы после команды, если это необходимо
+  arguments:
+    player-req: '<игрок>'
+    player-opt: '[игрок]'
     currency: '<валюта>'
     amount: '<сумма>'
-    page: '(страница)'
-    id: "<идентификатор>"
+    page: '[стр.]'
+    id: '<ID>'

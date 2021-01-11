@@ -26,101 +26,105 @@ error:
   wrong-syntax: "&cWrong syntax of command, you can use '/peco help' for help."
   only-for-players: "&cOnly players can use this command."
   no-permissions: "&cYou don't have permission for this command."
-  arg-is-not-float: "&cArgument '%argument%' must be positive integer or float."
-  arg-is-not-int: "&cArgument '%argument%' must be positive integer."
+  arg-is-not-float: "&cArgument '%arg%' must be positive integer or float."
+  arg-is-not-int: "&cArgument '%arg%' must be positive integer."
   unknown-currency: "&cUnknown currency '%currency%'."
   unknown-wallet: "&cPlayer '%player%' has not wallet yet."
 
 # Operations which used in other messages
 operation:
-  increase: "&a»"
-  decrease: "&c»"
+  increase: '&a»'
+  decrease: '&c»'
 
 # Balance add
 add:
-  limit: "&cThere are %amount%%currency% already on %player%'s balance and after adding his balance will reach the limit which is %limit%%currency%."
-  other: "&fAdded &b%amount%%currency% &fto &b%player%'s &fbalance: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)"
-  self: "&6| \n&6| &fYou received &b%amount%%currency% &fto your balance: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)\n&6| "
+  failed:
+    limit-reached: "&cThis transaction can reach the limit — %limit%%currency%."
+  success:
+    operator: "&fAdded &b%amount%%currency% &fto &b%player%'s &fbalance: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)"
+    holder: '&6| &fYou received &b%amount%%currency% &fto your balance: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)'
 
 # Balance set
 set:
-  limit: "&cThis transaction will reach the limit which is %limit%%currency%."
-  already: "&c%player%'s balance for this currency already equals %amount%%currency%."
-  other: "&fChanged &b%player%'s &fbalance: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)"
-  self: "&6| \n&6| &fYour balance changed: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)\n&6| "
+  failed:
+    limit-reached: "&cThis transaction can reach the limit — %limit%%currency%."
+    already-equals: "&c%player%'s balance for this currency already equals %amount%%currency%."
+  success:
+    operator: "&fChanged &b%player%'s &fbalance: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)"
+    holder: '&6| &fYour balance changed: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)'
 
 # Balance reset
 reset:
-  already: "&c%player%'s balance for this currency is empty already."
-  other: "&fNullified &b%player%'s &fbalance: &b%from%%currency% %operation% &b0%currency% &7(#%id%)"
-  self: "&6| \n&6| &fYour balance has been nullified: &b%from%%currency% %operation% &b0%currency% &7(#%id%)\n&6| "
+  failed:
+    already: "&c%player%'s balance for this currency is empty already."
+  success:
+    operator: "&fNullified &b%player%'s &fbalance: &b%from%%currency% %operation% &b0%currency% &7(#%id%)"
+    holder: '&6| &fYour balance has been nullified: &b%from%%currency% %operation% &b0%currency% &7(#%id%)'
 
 # Balance take
 take:
-  not-enough: "&cThere are only %amount%%currency% on %player%'s balance that is less than requested %requested%%currency%."
-  other: "&fTaked &b%amount%%currency% &ffrom &b%player%'s &fbalance: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)"
-  self: "&6| \n&6| &fTaked &b%amount%%currency% &ffrom your balance: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)\n&6| "
+  failed:
+    not-enough: "&cThere are only %amount%%currency% on %player%'s balance that is less than requested %requested%%currency%."
+  success:
+    operator: "&fTaked &b%amount%%currency% &ffrom &b%player%'s &fbalance: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)"
+    holder: '&6| &fTaked &b%amount%%currency% &ffrom your balance: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)'
 
 # Balance info
 balance:
+  failed:
+    empty:
+      other: "&c%player%'s wallet is empty :("
+      self: "&cYour wallet is empty :("
+  success:
+    other: "&f%player%'s wallet balance: &r%balance%"
+    self: "&fYour wallet balance: &r%balance%"
+
   # 'format' and 'separator' is a backend values which will be used for formatting value for %balance% placeholder
   # 'separator' separates currencies amounts if there are several of them
   # By default plugin will display empty currencies wallets, but you can disable it in config.yml
   format: "&b%amount%%currency%"
   separator: "&f, "
-  # No children permissions
-  other-balance: "&cYou don't have permissions to see balances of other players."
-  offline-balance: "&cYou don't have permissions to see balances of offline players."
-  # Empty wallet
-  empty-other: "&cWallet of %player% is empty :("
-  empty-self: "&cYour wallet is empty :("
-  # Successfully executed
-  other: "&fWallet balance of %player%: &r%balance%"
-  self: "&fYour wallet balance: &r%balance%"
 
 # Money sharing
 pay:
-  to-self: "&cOh.. It's useless, isn't it?"
-  offline-pay: "&cYou don't have permissions to transfer money to offline players."
-  not-enough: "&cThere are only %amount%%currency% on your balance that is less than requested %requested%%currency%."
-  limit: "&cThis transaction will reach the limit (%limit%%currency%) for payment receiver."
-  other: "&fSent &b%amount%%currency% &fto &b%player%'s &fwallet, your balance changed: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)"
-  self: "&6| \n&6| &fYou received &b%amount%%currency% &ffrom &b%source%&f: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)"
+  failed:
+    to-self: "&cOh.. It's useless, isn't it?"
+    not-enough: "&cThere are only %amount%%currency% on your balance that is less than requested %requested%%currency%."
+    limit-reached: "&cThis transaction will reach the limit (%limit%%currency%) for payment receiver."
+  success:
+    sender: "&fSent &b%amount%%currency% &fto &b%receiver%'s &fwallet, your balance was changed: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)"
+    receiver: '&6| &fYou received &b%amount%%currency% &ffrom &b%sender%&f: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)'
 
 # Transactions history
 history:
-  # No children permissions
-  other-history: "&cYou don't have permissions to see transactions history of other players."
-  offline-history: "&cYou don't have permissions to see transactions history of offline players."
-  # Empty output
-  empty-self: "&cYour history is empty."
-  empty-other: "&cHistory for %player%'s wallet is empty."
-  empty-page: "&cPage %page% is empty."
-  # Successed
-  header-other: "   &7Transactions history for %player% [%page%/%total%]"
-  header-self: "   &7Your transactions history [%page%/%total%]"
+  failed:
+    no-transactions: '&cThere are no transactions.'
+    page-is-empty: "&cPage %page% is empty."
+
+  header:
+    other: "   &7%player%'s transactions history [%page%/%total%]"
+    self: "   &7Your transactions history [%page%/%total%]"
   body: " &7#%id% &f%date%: &b%from%%currency% %operation% &b%to%%currency% &7(%action%)"
-  footer-other: " "
-  footer-self: " "
+  footer: " "
+
+  # Amount of elements per one page
+  page-size: 10
 
 # Transaction info
 info:
-  not-found: "&cTransaction #%id% is not exist."
-  # No children permissions
-  other-info: "&cYou don't have permissions to see transaction info of other player."
-  offline-info: "&cYou don't have permissions to see transaction info of offline player."
-  # Successed
-  header: "   &7Information about transaction"
-  footer: " "
-  # You can change sequence of messages and remove useless
-  list:
-    id: " &fUnique ID: &b#%id%"
-    owner: " &fWallet owner: &b%owner%"
-    action: " &fAction: &b%action%"
-    pre: " &fPre-transaction balance: &b%pre%%symbol%"
-    post: " &fPost-transaction balance: &b%post%%symbol%"
-    currency: " &fWallet currency: &b%currency% (%symbol%)"
-    date: " &fDate: &b%date%"
+  failed:
+    unknown-id: "&cTransaction #%id% is not exist."
+
+  success: |2-
+    &7   Information about transaction
+    &f Unique ID: &b#%id%
+    &f Wallet holder: &b%owner%
+    &f Action: &b%action%
+    &f Pre-transaction balance: &b%pre%%symbol%
+    &f Post-transaction balance: &b%post%%symbol%
+    &f Wallet currency: &b%currency% (%symbol%)
+    &f Date: &b%date%
+    &f
 
 # Actions for %action% placeholder
 # You can use placeholder %source% to display source of action (other player, sender of command)
@@ -129,9 +133,15 @@ action:
   add: "Added by #staff"
   set: "Changed by #staff"
   reset: "Nullified by #staff"
-  take: "Taked by #staff"
-  pay: "Payment from %source%"
+  take: "Taken by #staff"
+  payment: 
+    incoming: "Payment from %source%"
+    outcoming: "Payment to %source%"
   failed: "&cFailed"
+
+# Source value for console-by transaction
+# Example: 0.0 » 0.2 (added by #console), where #console is transaction operator
+console-operator: "#console"
 
 # Just plugin reloaded message (for /peco reload)
 reload-success: "&fPEconomy reloaded."
@@ -143,22 +153,22 @@ help:
   footer: " "
   # Descriptions for commands
   descriptions:
-    help: 'Display help page'
+    help: 'Display this help page'
     balance: 'View balance of all wallets'
     pay: 'Transfer money to other player'
-    history: 'View transactions history'
-    info: 'Display transaction info'
     add: 'Add amount to balance'
     set: 'Change balance value'
     reset: 'Nullify the balance'
     take: 'Take amount from balance'
+    history: 'View transactions history'
+    info: 'Display transaction info'
     reload: 'Reload configurations'
   # Placeholders for commands
   # Will be used after subcommands if it is needed
-  placeholders:
-    player: '<player>'
-    player-optional: '(player)'
+  arguments:
+    player-req: '<player>'
+    player-opt: '[player]'
     currency: '<currency>'
     amount: '<amount>'
-    page: '(page)'
-    id: "<id>"
+    page: '[page]'
+    id: '<id>'

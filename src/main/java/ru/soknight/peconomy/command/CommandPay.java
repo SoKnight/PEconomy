@@ -1,216 +1,181 @@
 package ru.soknight.peconomy.command;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
-import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import ru.soknight.lib.argument.CommandArguments;
-import ru.soknight.lib.command.ExtendedCommandExecutor;
+import ru.soknight.lib.command.preset.standalone.OmnipotentCommand;
 import ru.soknight.lib.configuration.Configuration;
 import ru.soknight.lib.configuration.Messages;
-import ru.soknight.lib.validation.CommandExecutionData;
-import ru.soknight.lib.validation.validator.ArgsCountValidator;
-import ru.soknight.lib.validation.validator.PermissionValidator;
-import ru.soknight.lib.validation.validator.SenderIsPlayerValidator;
-import ru.soknight.lib.validation.validator.Validator;
-import ru.soknight.peconomy.command.tool.AmountFormatter;
-import ru.soknight.peconomy.command.tool.SourceFormatter;
-import ru.soknight.peconomy.command.validation.AmountValidator;
-import ru.soknight.peconomy.command.validation.CurrencyValidator;
-import ru.soknight.peconomy.command.validation.WalletExecutionData;
-import ru.soknight.peconomy.command.validation.WalletValidator;
 import ru.soknight.peconomy.configuration.CurrenciesManager;
 import ru.soknight.peconomy.configuration.CurrencyInstance;
 import ru.soknight.peconomy.database.DatabaseManager;
-import ru.soknight.peconomy.database.Transaction;
-import ru.soknight.peconomy.database.TransactionType;
-import ru.soknight.peconomy.database.Wallet;
+import ru.soknight.peconomy.database.model.TransactionModel;
+import ru.soknight.peconomy.database.model.TransactionModel.TransactionType;
+import ru.soknight.peconomy.database.model.WalletModel;
+import ru.soknight.peconomy.util.AmountFormatter;
+import ru.soknight.peconomy.util.OperatorFormatter;
 
-public class CommandPay extends ExtendedCommandExecutor {
-	
-	private final DatabaseManager databaseManager;
-	private final CurrenciesManager currenciesManager;
-	
-	private final Configuration config;
-	private final Messages messages;
-	
-	public CommandPay(DatabaseManager databaseManager, CurrenciesManager currenciesManager,
-			Configuration config, Messages messages) {
-		super(messages);
-		
-		this.databaseManager = databaseManager;
-		this.currenciesManager = currenciesManager;
-		
-		this.config = config;
-		this.messages = messages;
-		
-		String sendermsg = messages.get("error.only-for-players");
-		String permmsg = messages.get("error.no-permissions");
-		String argsmsg = messages.get("error.wrong-syntax");
-		String walletmsg = messages.get("error.unknown-wallet");
-		String amountmsg = messages.get("error.arg-is-not-float");
-		String currencymsg = messages.get("error.unknown-currency");
-		
-		Validator senderval = new SenderIsPlayerValidator(sendermsg);
-		Validator permval = new PermissionValidator("peco.command.pay", permmsg);
-		Validator argsval = new ArgsCountValidator(3, argsmsg);
-		Validator walletval = new WalletValidator(databaseManager, walletmsg);
-		Validator amountval = new AmountValidator(amountmsg);
-		Validator currencyval = new CurrencyValidator(currenciesManager, currencymsg);
-		
-		super.addValidators(senderval, permval, argsval, walletval, amountval, currencyval);
-	}
-	
-	@Override
-	public void executeCommand(CommandSender sender, CommandArguments args) {
-		String owner = args.get(0), amstr = args.get(1), currencyid = args.get(2);
-		
-		CommandExecutionData data = new WalletExecutionData(sender, args, owner, currencyid, amstr);
-		if(!validateExecution(data)) return;
-		
-		String source = sender.getName();
-		
-		if(source.equals(owner)) {
-			messages.getAndSend(sender, "pay.to-self");
-			return;
-		}
-		
-		OfflinePlayer offline = Bukkit.getOfflinePlayer(owner);
-		if(!offline.isOnline() && sender.hasPermission("peco.command.pay.offline")) {
-			messages.getAndSend(sender, "pay.offline-pay");
-			return;
-		}
-		
-		// Checking receiver wallet exist
-		Wallet other = databaseManager.getWallet(owner);
-		if(other == null) {
-			messages.sendFormatted(sender, "error.unknown-wallet", "%player%", owner);
-			return;
-		}
-		
-		// Getting some values
-		float amount = Float.parseFloat(amstr);
-		Wallet self = databaseManager.getWallet(source);
-		
-		float preself = self.getAmount(currencyid);
-		float postself = preself - amount;
-		
-		CurrencyInstance currency = currenciesManager.getCurrency(currencyid);
-		
-		// Formatting values
-		String symbol = currency.getSymbol();
-		String preselfstr = AmountFormatter.format(preself);
-		
-		// Checking for invalid self balance
-		String amountstr = AmountFormatter.format(amount);
-		if(postself < 0) {
-			messages.sendFormatted(sender, "pay.not-enough",
-					"%amount%", preselfstr,
-					"%currency%", symbol,
-					"%player%", owner,
-					"%requested%", amountstr);
-			return;
-		}
-		
-		// Check if limit reached on receiver balance
-		float preother = other.getAmount(currencyid);
-		float postother = preother + amount;
-		float limit = currency.getLimit();
-		
-		if(limit != 0 && postother > limit) {
-			String limitstr = AmountFormatter.format(limit);
-			messages.sendFormatted(sender, "pay.limit",
-					"%currency%", symbol,
-					"%limit%", limitstr);
-			return;
-		}
-		
-		// Updating DB
-		self.takeAmount(currencyid, amount);
-		other.addAmount(currencyid, amount);
-		
-		databaseManager.updateWallet(self);
-		databaseManager.updateWallet(other);
-		
-		// Formatting values
-		String preotherstr = AmountFormatter.format(preother);
-		String postotherstr = AmountFormatter.format(postother);
-		String postselfstr = AmountFormatter.format(postself);
-		String operationself = messages.get("operation.decrease");
-		String operationother = messages.get("operation.increase");
-		
-		// Saving transaction
-		Transaction transaction = new Transaction(owner, currencyid, TransactionType.PAYMENT, preother, postother, source);
-		databaseManager.saveTransaction(transaction);
-		
-		int id = transaction.getId();
-				
-		// Sending messages to sender and wallet owner if he is online
-		messages.sendFormatted(sender, "pay.other",
-				"%amount%", amountstr,
-				"%currency%", symbol,
-				"%player%", owner,
-				"%from%", preselfstr,
-				"%operation%", operationself,
-				"%to%", postselfstr,
-				"%id%", id);
-		
-		OfflinePlayer offlinetarget = Bukkit.getOfflinePlayer(owner);
-		if(offlinetarget.isOnline())
-			messages.sendFormatted(offlinetarget.getPlayer(), "pay.self",
-					"%amount%", amountstr,
-					"%currency%", symbol,
-					"%source%", SourceFormatter.format(config, source, offlinetarget.getPlayer()),
-					"%from%", preotherstr,
-					"%operation%", operationother,
-					"%to%", postotherstr,
-					"%source%", source,
-					"%id%", id);
-	}
-	
-	@Override
-	public List<String> executeTabCompletion(CommandSender sender, CommandArguments args) {
-		if(!validateTabCompletion(sender, args)) return null;
-		if(!(sender instanceof Player)) return null;
-		
-		List<String> output = new ArrayList<>();
-		
-		if(args.size() == 1) {
-			if(!sender.hasPermission("peco.command.pay.offline")) {
-				Collection<? extends Player> players = Bukkit.getOnlinePlayers();
-				String arg = args.get(0).toLowerCase();
-				players.parallelStream()
-						.filter(p -> p.getName().toLowerCase().startsWith(arg))
-						.forEach(p -> output.add(p.getName()));
-			} else {
-				OfflinePlayer[] players = Bukkit.getOfflinePlayers();
-				if(players.length != 0) {
-					String arg = args.get(0).toLowerCase();
-					Arrays.stream(players).parallel()
-							.filter(p -> p.getName().toLowerCase().startsWith(arg))
-							.forEach(p -> output.add(p.getName()));
-				}
-			}
-		} else if(args.size() == 3) {
-			Set<String> currencies = this.currenciesManager.getCurrenciesIDs();
-			if(!currencies.isEmpty()) {
-				String arg = args.get(2).toLowerCase();
-				currencies.parallelStream()
-						.filter(c -> c.toLowerCase().startsWith(arg))
-						.forEach(c -> output.add(c));
-			}
-		} else return null;
-		
-		return output;
-	}
-
-	
-	
+public class CommandPay extends OmnipotentCommand {
+    
+    private final Configuration config;
+    private final Messages messages;
+    
+    private final DatabaseManager databaseManager;
+    private final CurrenciesManager currenciesManager;
+    
+    public CommandPay(
+            Configuration config, Messages messages,
+            DatabaseManager databaseManager, CurrenciesManager currenciesManager
+    ) {
+        super("pay", null, "peco.command.pay", 3, messages);
+        
+        this.config = config;
+        this.messages = messages;
+        
+        this.databaseManager = databaseManager;
+        this.currenciesManager = currenciesManager;
+    }
+    
+    @Override
+    public void executeCommand(CommandSender sender, CommandArguments args) {
+        Player player = (Player) sender;
+        String walletHolder = player.getName();
+        
+        String receiver = args.get(0);
+        float amount = args.getAsFloat(1);
+        String currencyId = args.get(2);
+        
+        if(amount <= 0F) {
+            messages.sendFormatted(sender, "error.arg-is-not-float", "%arg%", args.get(1));
+            return;
+        }
+        
+        if(!currenciesManager.isCurrency(currencyId)) {
+            messages.sendFormatted(sender, "error.unknown-currency", "%currency%", currencyId);
+            return;
+        }
+        
+        if(walletHolder.equals(receiver)) {
+            messages.getAndSend(sender, "pay.failed.to-self");
+            return;
+        }
+        
+        CompletableFuture<WalletModel> receiverWalletFuture = databaseManager.getWallet(receiver);
+        
+        databaseManager.getWallet(walletHolder).thenAcceptAsync(senderWallet -> {
+            if(senderWallet == null) {
+                messages.sendFormatted(sender, "error.unknown-wallet", "%player%", walletHolder);
+                return;
+            }
+            
+            WalletModel receiverWallet = receiverWalletFuture.join();
+            if(receiverWallet == null) {
+                messages.sendFormatted(sender, "error.unknown-wallet", "%player%", receiver);
+                return;
+            }
+            
+            CurrencyInstance currency = currenciesManager.getCurrency(currencyId);
+            String amountstr = AmountFormatter.format(amount);
+            String symbol = currency.getSymbol();
+            
+            float preSender = senderWallet.getAmount(currencyId);
+            float postSender = preSender - amount;
+            
+            String preSenderStr = AmountFormatter.format(preSender);
+            String postSenderStr = AmountFormatter.format(postSender);
+            
+            // checking for 0 reached (for payment sender)
+            if(postSender < 0F) {
+                messages.sendFormatted(sender, "pay.failed.not-enough",
+                        "%amount%", preSenderStr,
+                        "%currency%", symbol,
+                        "%requested%", amountstr
+                );
+                return;
+            }
+            
+            float preReceiver = receiverWallet.getAmount(currencyId);
+            float postReceiver = preReceiver + amount;
+            
+            String preReceiverStr = AmountFormatter.format(preReceiver);
+            String postReceiverStr = AmountFormatter.format(postReceiver);
+            
+            // checking for balance limit reached
+            float limit = currency.getLimit();
+            if(limit > 0F && postReceiver > limit) {
+                messages.sendFormatted(sender, "pay.failed.limit-reached",
+                        "%limit%", AmountFormatter.format(limit),
+                        "%currency%", symbol
+                );
+                return;
+            }
+            
+            // updating database
+            senderWallet.takeAmount(currencyId, amount);
+            receiverWallet.addAmount(currencyId, amount);
+            databaseManager.saveWallet(senderWallet).join();
+            databaseManager.saveWallet(receiverWallet).join();
+            
+            // saving transactions
+            TransactionModel senderTransaction = new TransactionModel(
+                    walletHolder, receiver, currencyId, TransactionType.PAYMENT_OUTCOMING, preSender, postSender
+            );
+            TransactionModel receiverTransaction = new TransactionModel(
+                    receiver, walletHolder, currencyId, TransactionType.PAYMENT_INCOMING, preReceiver, postReceiver
+            );
+            databaseManager.saveTransaction(senderTransaction).join();
+            databaseManager.saveTransaction(receiverTransaction).join();
+            
+            // sending messages to sender and wallet owner if he is online
+            messages.sendFormatted(sender, "pay.success.sender",
+                    "%amount%", amountstr,
+                    "%currency%", symbol,
+                    "%receiver%", receiver,
+                    "%from%", preSenderStr,
+                    "%operation%", messages.get("operation.decrease"),
+                    "%to%", postSenderStr,
+                    "%id%", senderTransaction.getId()
+            );
+            
+            Player receiverPlayer = Bukkit.getPlayer(receiver);
+            if(receiverPlayer != null)
+                messages.sendFormatted(receiverPlayer, "pay.success.receiver",
+                        "%amount%", amountstr,
+                        "%currency%", symbol,
+                        "%sender%", OperatorFormatter.format(config, walletHolder, receiverPlayer),
+                        "%from%", preReceiverStr,
+                        "%operation%", messages.get("operation.increase"),
+                        "%to%", postReceiverStr,
+                        "%id%", receiverTransaction.getId()
+                );
+        });
+    }
+    
+    @Override
+    public List<String> executeTabCompletion(CommandSender sender, CommandArguments args) {
+        String arg = getLastArgument(args, true);
+        
+        // wallet holders suggestions
+        if(args.size() == 1) {
+            return Bukkit.getOnlinePlayers().stream()
+                    .map(Player::getName)
+                    .filter(n -> n.toLowerCase().startsWith(arg))
+                    .collect(Collectors.toList());
+            
+        // currencies suggestions
+        } else if(args.size() == 3) {
+            return currenciesManager.getCurrenciesIDs().stream()
+                    .filter(c -> c.toLowerCase().startsWith(arg))
+                    .collect(Collectors.toList());
+        }
+        
+        return null;
+    }
+    
 }
