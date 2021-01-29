@@ -15,7 +15,8 @@ public class PlayerJoinListener implements Listener {
     private final CurrenciesManager currenciesManager;
     
     public PlayerJoinListener(
-            Plugin plugin, DatabaseManager databaseManager,
+            Plugin plugin,
+            DatabaseManager databaseManager,
             CurrenciesManager currenciesManager
     ) {
         this.databaseManager = databaseManager;
@@ -30,11 +31,11 @@ public class PlayerJoinListener implements Listener {
         
         // moved to async task
         databaseManager.getWallet(name).thenAcceptAsync(wallet -> {
-            if(wallet != null)
+            if(wallet == null)
                 wallet = new WalletModel(name);
             
             currenciesManager.getCurrencies().forEach(wallet::loadCurrency);
-            databaseManager.saveWallet(wallet);
+            databaseManager.saveWallet(wallet).join();
         });
     }
     
