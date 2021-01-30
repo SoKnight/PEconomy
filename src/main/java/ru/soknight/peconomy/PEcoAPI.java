@@ -1,5 +1,9 @@
 package ru.soknight.peconomy;
 
+import java.util.Collection;
+import java.util.Collections;
+
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import ru.soknight.peconomy.configuration.CurrenciesManager;
 import ru.soknight.peconomy.configuration.CurrencyInstance;
@@ -7,7 +11,7 @@ import ru.soknight.peconomy.database.DatabaseManager;
 import ru.soknight.peconomy.database.model.TransactionModel;
 import ru.soknight.peconomy.database.model.WalletModel;
 
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PACKAGE)
 public class PEcoAPI {
     
     private final DatabaseManager databaseManager;
@@ -157,6 +161,14 @@ public class PEcoAPI {
      */
     public CurrencyInstance getCurrencyByID(String id) {
         return currenciesManager.getCurrency(id);
+    }
+    
+    /**
+     * Gets currencies instances successfully initialized by PEconomy
+     * @return All initialized currencies instances collection (read-only)
+     */
+    public Collection<CurrencyInstance> getLoadedCurrencies() {
+        return Collections.unmodifiableCollection(currenciesManager.getCurrencies());
     }
     
     /**

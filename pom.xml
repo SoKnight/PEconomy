@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>ru.soknight</groupId>
     <artifactId>peconomy</artifactId>
-    <version>2.1.1</version>
+    <version>2.2.0</version>
     
     <name>PEconomy</name>
     <description>An economy provider with unlimited currencies and Vault support</description>

@@ -77,7 +77,7 @@ public class PEconomy extends JavaPlugin {
     private void hookInto() {
         try {
             // PlaceholdersAPI hook
-            if(config.getBoolean("hooks.papi")) {
+            if(config.getBoolean("hooks.papi", true)) {
                 if(Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
                     new PEcoExpansion(this, databaseManager);
                     getLogger().info("[Hooks] Successfully hooked into PlaceholderAPI.");
@@ -87,7 +87,7 @@ public class PEconomy extends JavaPlugin {
             }
         
             // Vault hook
-            if(config.getBoolean("hooks.vault")) {
+            if(config.getBoolean("hooks.vault.enabled", false)) {
                 if(Bukkit.getPluginManager().isPluginEnabled("Vault")) {
                     new VaultEconomy(this, config, messages, databaseManager, currenciesManager);
                     getLogger().info("[Hooks] Successfylly hooked into Vault.");

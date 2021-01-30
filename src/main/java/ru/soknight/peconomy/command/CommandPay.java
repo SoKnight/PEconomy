@@ -16,7 +16,6 @@ import ru.soknight.peconomy.configuration.CurrenciesManager;
 import ru.soknight.peconomy.configuration.CurrencyInstance;
 import ru.soknight.peconomy.database.DatabaseManager;
 import ru.soknight.peconomy.database.model.TransactionModel;
-import ru.soknight.peconomy.database.model.TransactionModel.TransactionType;
 import ru.soknight.peconomy.database.model.WalletModel;
 import ru.soknight.peconomy.util.AmountFormatter;
 import ru.soknight.peconomy.util.OperatorFormatter;
@@ -124,10 +123,10 @@ public class CommandPay extends OmnipotentCommand {
             
             // saving transactions
             TransactionModel senderTransaction = new TransactionModel(
-                    walletHolder, receiver, currencyId, TransactionType.PAYMENT_OUTCOMING, preSender, postSender
+                    walletHolder, receiver, currencyId, "payment_outcoming", preSender, postSender
             );
             TransactionModel receiverTransaction = new TransactionModel(
-                    receiver, walletHolder, currencyId, TransactionType.PAYMENT_INCOMING, preReceiver, postReceiver
+                    receiver, walletHolder, currencyId, "payment_incoming", preReceiver, postReceiver
             );
             databaseManager.saveTransaction(senderTransaction).join();
             databaseManager.saveTransaction(receiverTransaction).join();

@@ -14,7 +14,6 @@ import ru.soknight.peconomy.configuration.CurrenciesManager;
 import ru.soknight.peconomy.configuration.CurrencyInstance;
 import ru.soknight.peconomy.database.DatabaseManager;
 import ru.soknight.peconomy.database.model.TransactionModel;
-import ru.soknight.peconomy.database.model.TransactionModel.TransactionType;
 import ru.soknight.peconomy.util.AmountFormatter;
 
 public class CommandSet extends ArgumentableSubcommand {
@@ -88,7 +87,7 @@ public class CommandSet extends ArgumentableSubcommand {
             
             // saving transaction
             TransactionModel transaction = new TransactionModel(
-                    walletHolder, operator, currencyId, TransactionType.SET, pre, amount
+                    walletHolder, operator, currencyId, "set", pre, amount
             );
             databaseManager.saveTransaction(transaction).join();
             

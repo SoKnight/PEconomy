@@ -17,7 +17,6 @@ import ru.soknight.peconomy.configuration.CurrenciesManager;
 import ru.soknight.peconomy.configuration.CurrencyInstance;
 import ru.soknight.peconomy.database.DatabaseManager;
 import ru.soknight.peconomy.database.model.TransactionModel;
-import ru.soknight.peconomy.database.model.TransactionModel.TransactionType;
 import ru.soknight.peconomy.util.AmountFormatter;
 import ru.soknight.peconomy.util.OperatorFormatter;
 
@@ -131,8 +130,8 @@ public class CommandHistory extends PermissibleSubcommand {
         float pre = transaction.getPreBalance();
         float post = transaction.getPostBalance();
         
-        TransactionType type = transaction.getType();
-        String typePath = type.name().toLowerCase().replace("_", ".");
+        String type = transaction.getType();
+        String typePath = type.toLowerCase().replace("_", ".");
         
         String source = OperatorFormatter.format(config, transaction.getOperator(), sender);
         String action = messages.getFormatted("action." + typePath, "%source%", source);

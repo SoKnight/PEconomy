@@ -54,7 +54,10 @@ messages:
 # You want other hooks? Write me about it in plugin's discussion on SpigotMC page :)
 hooks:
   # Should plugin register self as economy provider for Vault?
-  vault: false
+  vault: 
+    enabled: false
+    # Should to save transactions for operations via Vault and alert a player about it?
+    transactions: true
   # Should plugin add own placeholders into PlaceholdersAPI?
   papi: true
 

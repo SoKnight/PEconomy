@@ -25,7 +25,7 @@ public class TransactionModel {
     @DatabaseField
     private String currency;
     @DatabaseField
-    private TransactionType type;
+    private String type;
     @DatabaseField
     private float preBalance;
     @DatabaseField
@@ -35,7 +35,7 @@ public class TransactionModel {
     
     public TransactionModel(
             String walletHolder, String operator, String currency,
-            TransactionType type, float pre, float post
+            String type, float pre, float post
     ) {
         this.walletHolder = walletHolder;
         this.operator = operator;
@@ -49,13 +49,7 @@ public class TransactionModel {
     }
     
     public boolean isSuccess() {
-        return this.type != TransactionType.FAILED;
-    }
-    
-    public enum TransactionType {
-        ADD, SET, RESET, TAKE,
-        PAYMENT_INCOMING, PAYMENT_OUTCOMING,
-        FAILED;
+        return !type.equalsIgnoreCase("failed");
     }
     
 }

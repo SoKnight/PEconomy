@@ -19,7 +19,6 @@ import ru.soknight.peconomy.configuration.CurrenciesManager;
 import ru.soknight.peconomy.configuration.CurrencyInstance;
 import ru.soknight.peconomy.database.DatabaseManager;
 import ru.soknight.peconomy.database.model.TransactionModel;
-import ru.soknight.peconomy.database.model.TransactionModel.TransactionType;
 import ru.soknight.peconomy.database.model.WalletModel;
 import ru.soknight.peconomy.util.AmountFormatter;
 import ru.soknight.peconomy.util.OperatorFormatter;
@@ -180,36 +179,38 @@ public class VaultEconomy implements Economy {
         databaseManager.saveWallet(wallet);
         
         // saving transaction
-        TransactionModel transaction = new TransactionModel(
-                playerName, "#vault", currency.getID(), TransactionType.TAKE, pre, post
-        );
-        databaseManager.saveTransaction(transaction);
-        
-        String message = messages.getFormatted("take.other",
-                "%amount%", format(amount),
-                "%currency%", currency.getSymbol(),
-                "%player%", playerName,
-                "%from%", AmountFormatter.format(pre),
-                "%operation%", messages.get("operation.decrease"),
-                "%to%", AmountFormatter.format(post),
-                "%id%", transaction.getId()
-        );
-        
-        OfflinePlayer offline = Bukkit.getOfflinePlayer(playerName);
-        if(offline != null && offline.isOnline()) {
-            messages.sendFormatted(offline.getPlayer(), "take.self",
+        if(config.getBoolean("hooks.vault.transactions", true)) {
+            TransactionModel transaction = new TransactionModel(
+                    playerName, "#vault", currency.getID(), "take", pre, post
+            );
+            databaseManager.saveTransaction(transaction);
+            
+            String message = messages.getFormatted("take.other",
                     "%amount%", format(amount),
                     "%currency%", currency.getSymbol(),
                     "%player%", playerName,
                     "%from%", AmountFormatter.format(pre),
                     "%operation%", messages.get("operation.decrease"),
                     "%to%", AmountFormatter.format(post),
-                    "%source%", OperatorFormatter.format(config, "#vault", offline.getPlayer()),
                     "%id%", transaction.getId()
             );
+            
+            OfflinePlayer offline = Bukkit.getOfflinePlayer(playerName);
+            if(offline != null && offline.isOnline()) {
+                messages.sendFormatted(offline.getPlayer(), "take.self",
+                        "%amount%", format(amount),
+                        "%currency%", currency.getSymbol(),
+                        "%player%", playerName,
+                        "%from%", AmountFormatter.format(pre),
+                        "%operation%", messages.get("operation.decrease"),
+                        "%to%", AmountFormatter.format(post),
+                        "%source%", OperatorFormatter.format(config, "#vault", offline.getPlayer()),
+                        "%id%", transaction.getId()
+                );
+            }
         }
         
-        return new EconomyResponse(amount, post, ResponseType.SUCCESS, message);
+        return new EconomyResponse(amount, post, ResponseType.SUCCESS, null);
     }
 
     @Override
@@ -253,36 +254,38 @@ public class VaultEconomy implements Economy {
         databaseManager.saveWallet(walletModel);
         
         // saving transaction
-        TransactionModel transaction = new TransactionModel(
-                playerName, "#vault", currency.getID(), TransactionType.ADD, pre, post
-        );
-        databaseManager.saveTransaction(transaction);
-        
-        String message = messages.getFormatted("add.other",
-                "%amount%", format(amount),
-                "%currency%", currency.getSymbol(),
-                "%player%", playerName,
-                "%from%", AmountFormatter.format(pre),
-                "%operation%", messages.get("operation.increase"),
-                "%to%", AmountFormatter.format(post),
-                "%id%", transaction.getId()
-        );
-        
-        OfflinePlayer offline = Bukkit.getOfflinePlayer(playerName);
-        if(offline != null && offline.isOnline()) {
-            messages.sendFormatted(offline.getPlayer(), "add.self",
+        if(config.getBoolean("hooks.vault.transactions", true)) {
+            TransactionModel transaction = new TransactionModel(
+                    playerName, "#vault", currency.getID(), "add", pre, post
+            );
+            databaseManager.saveTransaction(transaction);
+            
+            String message = messages.getFormatted("add.other",
                     "%amount%", format(amount),
                     "%currency%", currency.getSymbol(),
                     "%player%", playerName,
                     "%from%", AmountFormatter.format(pre),
                     "%operation%", messages.get("operation.increase"),
                     "%to%", AmountFormatter.format(post),
-                    "%source%", OperatorFormatter.format(config, "#vault", offline.getPlayer()),
                     "%id%", transaction.getId()
             );
+            
+            OfflinePlayer offline = Bukkit.getOfflinePlayer(playerName);
+            if(offline != null && offline.isOnline()) {
+                messages.sendFormatted(offline.getPlayer(), "add.self",
+                        "%amount%", format(amount),
+                        "%currency%", currency.getSymbol(),
+                        "%player%", playerName,
+                        "%from%", AmountFormatter.format(pre),
+                        "%operation%", messages.get("operation.increase"),
+                        "%to%", AmountFormatter.format(post),
+                        "%source%", OperatorFormatter.format(config, "#vault", offline.getPlayer()),
+                        "%id%", transaction.getId()
+                );
+            }
         }
         
-        return new EconomyResponse(amount, post, ResponseType.SUCCESS, message);
+        return new EconomyResponse(amount, post, ResponseType.SUCCESS, null);
     }
 
     @Override
