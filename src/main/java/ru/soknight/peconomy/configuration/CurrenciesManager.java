@@ -15,7 +15,7 @@ import ru.soknight.peconomy.PEconomy;
 
 public class CurrenciesManager extends AbstractConfiguration {
 
-    private Map<String, CurrencyInstance> currencies;
+    private final Map<String, CurrencyInstance> currencies;
     @Getter private CurrencyInstance vaultCurrency;
     
     private final Configuration config;
@@ -60,7 +60,7 @@ public class CurrenciesManager extends AbstractConfiguration {
             currencies.put(id, currency);
         });
         
-        if(config.getBoolean("hooks.vault")) {
+        if(config.getBoolean("hooks.vault.enabled")) {
             String vault = getFileConfig().getString("vault.currency");
             if(vault == null)
                 logger.info("Vault default currency is not specified, ignoring it.");

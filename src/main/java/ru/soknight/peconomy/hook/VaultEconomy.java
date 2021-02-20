@@ -110,6 +110,8 @@ public class VaultEconomy implements Economy {
 
     @Override
     public double getBalance(String playerName) {
+        if(currency == null) return 0;
+        
         WalletModel wallet = databaseManager.getWallet(playerName).join();
         if(wallet == null) return 0;
         
@@ -133,6 +135,8 @@ public class VaultEconomy implements Economy {
 
     @Override
     public boolean has(String playerName, double amount) {
+        if(currency == null) return false;
+        
         WalletModel wallet = databaseManager.getWallet(playerName).join();
         if(wallet == null) return false;
         
@@ -156,6 +160,8 @@ public class VaultEconomy implements Economy {
 
     @Override
     public EconomyResponse withdrawPlayer(String playerName, double amount) {
+        if(currency == null) return new EconomyResponse(amount, 0, ResponseType.NOT_IMPLEMENTED, null);
+        
         WalletModel wallet = databaseManager.getWallet(playerName).join();
         if(wallet == null) {
             String message = messages.getFormatted("error.unknown-wallet", "%player%", playerName);
@@ -183,21 +189,11 @@ public class VaultEconomy implements Economy {
             TransactionModel transaction = new TransactionModel(
                     playerName, "#vault", currency.getID(), "take", pre, post
             );
-            databaseManager.saveTransaction(transaction);
-            
-            String message = messages.getFormatted("take.other",
-                    "%amount%", format(amount),
-                    "%currency%", currency.getSymbol(),
-                    "%player%", playerName,
-                    "%from%", AmountFormatter.format(pre),
-                    "%operation%", messages.get("operation.decrease"),
-                    "%to%", AmountFormatter.format(post),
-                    "%id%", transaction.getId()
-            );
+            databaseManager.saveTransaction(transaction).join();
             
             OfflinePlayer offline = Bukkit.getOfflinePlayer(playerName);
             if(offline != null && offline.isOnline()) {
-                messages.sendFormatted(offline.getPlayer(), "take.self",
+                messages.sendFormatted(offline.getPlayer(), "take.success.holder",
                         "%amount%", format(amount),
                         "%currency%", currency.getSymbol(),
                         "%player%", playerName,
@@ -230,6 +226,8 @@ public class VaultEconomy implements Economy {
 
     @Override
     public EconomyResponse depositPlayer(String playerName, double amount) {
+        if(currency == null) return new EconomyResponse(amount, 0, ResponseType.NOT_IMPLEMENTED, null);
+        
         WalletModel walletModel = databaseManager.getWallet(playerName).join();
         if(walletModel == null) {
             String message = messages.getFormatted("error.unknown-wallet", "%player%", playerName);
@@ -258,21 +256,11 @@ public class VaultEconomy implements Economy {
             TransactionModel transaction = new TransactionModel(
                     playerName, "#vault", currency.getID(), "add", pre, post
             );
-            databaseManager.saveTransaction(transaction);
-            
-            String message = messages.getFormatted("add.other",
-                    "%amount%", format(amount),
-                    "%currency%", currency.getSymbol(),
-                    "%player%", playerName,
-                    "%from%", AmountFormatter.format(pre),
-                    "%operation%", messages.get("operation.increase"),
-                    "%to%", AmountFormatter.format(post),
-                    "%id%", transaction.getId()
-            );
+            databaseManager.saveTransaction(transaction).join();
             
             OfflinePlayer offline = Bukkit.getOfflinePlayer(playerName);
             if(offline != null && offline.isOnline()) {
-                messages.sendFormatted(offline.getPlayer(), "add.self",
+                messages.sendFormatted(offline.getPlayer(), "add.success.holder",
                         "%amount%", format(amount),
                         "%currency%", currency.getSymbol(),
                         "%player%", playerName,

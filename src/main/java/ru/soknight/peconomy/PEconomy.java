@@ -90,7 +90,7 @@ public class PEconomy extends JavaPlugin {
             if(config.getBoolean("hooks.vault.enabled", false)) {
                 if(Bukkit.getPluginManager().isPluginEnabled("Vault")) {
                     new VaultEconomy(this, config, messages, databaseManager, currenciesManager);
-                    getLogger().info("[Hooks] Successfylly hooked into Vault.");
+                    getLogger().info("[Hooks] Successfully hooked into Vault.");
                 } else {
                     getLogger().info("[Hooks] Vault is not installed, ignoring it.");
                 }
