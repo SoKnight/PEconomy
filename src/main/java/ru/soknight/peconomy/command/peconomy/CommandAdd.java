@@ -14,7 +14,7 @@ import ru.soknight.peconomy.configuration.CurrenciesManager;
 import ru.soknight.peconomy.configuration.CurrencyInstance;
 import ru.soknight.peconomy.database.DatabaseManager;
 import ru.soknight.peconomy.database.model.TransactionModel;
-import ru.soknight.peconomy.util.AmountFormatter;
+import ru.soknight.peconomy.format.AmountFormatter;
 
 public class CommandAdd extends ArgumentableSubcommand {
 
@@ -47,7 +47,7 @@ public class CommandAdd extends ArgumentableSubcommand {
             return;
         }
         
-        databaseManager.getWallet(walletHolder).thenAcceptAsync(wallet -> {
+        databaseManager.getWallet(walletHolder).thenAccept(wallet -> {
             if(wallet == null) {
                 messages.sendFormatted(sender, "error.unknown-wallet", "%player%", walletHolder);
                 return;
@@ -68,21 +68,16 @@ public class CommandAdd extends ArgumentableSubcommand {
                 );
                 return;
             }
-            
-            wallet.addAmount(currencyId, amount);
+
+            TransactionModel transaction = wallet.addAmount(currencyId, amount, isPlayer(sender) ? sender.getName() : null);
             databaseManager.saveWallet(wallet).join();
+            databaseManager.saveTransaction(transaction).join();
             
             String operator = isPlayer(sender) ? sender.getName() : messages.get("console-operator");
             String amountstr = AmountFormatter.format(amount);
             String prestr = AmountFormatter.format(pre);
             String poststr = AmountFormatter.format(post);
             String operation = messages.get("operation.increase");
-            
-            // saving transaction
-            TransactionModel transaction = new TransactionModel(
-                    walletHolder, operator, currencyId, "add", pre, post
-            );
-            databaseManager.saveTransaction(transaction).join();
             
             // sending messages to sender and wallet owner if he is online
             messages.sendFormatted(sender, "add.success.operator",

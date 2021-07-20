@@ -29,6 +29,8 @@ vault:
 currencies:
   # UNIQUE ID of currency, will be used as currency command argument and tab-completion
   dollars:
+    # Currency displayname
+    name: 'Dollars'
     # Currency symbol(s)
     symbol: '$'
     # Max amount of this currency per player (optional, default: 0)
@@ -41,6 +43,7 @@ currencies:
     newbie-amount: 100
   # Additional premium euro currency, may be only for donaters.. hmm.. :)
   euro:
+    name: 'Euro'
     symbol: '€'
     max-amount: 400000
     # newbie-amount parameter is not specified and will be 0 (disabled) by default

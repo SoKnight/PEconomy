@@ -1,23 +1,26 @@
 package ru.soknight.peconomy.database.model;
 
 import java.util.HashMap;
+import java.util.Objects;
 
 import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import ru.soknight.peconomy.configuration.CurrencyInstance;
+import ru.soknight.peconomy.transaction.TransactionCause;
 
-@Data
+@Getter
 @NoArgsConstructor
 @DatabaseTable(tableName = "walletowners")
 public class WalletModel {
 
-    @DatabaseField(id = true, columnName = "owner")
+    @DatabaseField(columnName = "owner", id = true)
     private String walletHolder;
-    @DatabaseField(dataType = DataType.SERIALIZABLE)
+
+    @DatabaseField(columnName = "wallets", dataType = DataType.SERIALIZABLE)
     private HashMap<String, Float> wallets;
     
     public WalletModel(String walletHolder) {
@@ -26,15 +29,26 @@ public class WalletModel {
     }
     
     public void loadCurrency(CurrencyInstance currency) {
-        if(!wallets.containsKey(currency.getID()))
-            addAmount(currency.getID(), currency.getNewbieAmount());
+        if(!wallets.containsKey(currency.getId()))
+            addAmount(currency.getId(), currency.getNewbieAmount());
+    }
+
+    public void addAmount(String currency, float amount) {
+        synchronized (this) {
+            float pre = getAmount(currency);
+            float post = pre + amount;
+            wallets.put(currency, post);
+        }
     }
     
-    public void addAmount(String currency, float amount) {
-        float pre = getAmount(currency);
-        float post = pre + amount;
-        
-        wallets.put(currency, post);
+    public TransactionModel addAmount(String currency, float amount, String operator) {
+        synchronized (this) {
+            float pre = getAmount(currency);
+            float post = pre + amount;
+            wallets.put(currency, post);
+
+            return new TransactionModel(walletHolder, currency, pre, post, operator, TransactionCause.STAFF_ADD);
+        }
     }
     
     public float getAmount(String currency) {
@@ -50,19 +64,87 @@ public class WalletModel {
     }
 
     public void resetWallet(String currency) {
-        wallets.put(currency, 0F);
+        synchronized (this) {
+            float pre = getAmount(currency);
+            wallets.put(currency, 0F);
+        }
+    }
+
+    public TransactionModel resetWallet(String currency, String operator) {
+        synchronized (this) {
+            float pre = getAmount(currency);
+            wallets.put(currency, 0F);
+
+            return new TransactionModel(walletHolder, currency, pre, 0F, operator, TransactionCause.STAFF_RESET);
+        }
     }
     
     public void setAmount(String currency, float amount) {
-        wallets.put(currency, amount);
+        synchronized (this) {
+            wallets.put(currency, amount);
+        }
     }
-    
+
+    public TransactionModel setAmount(String currency, float amount, String operator) {
+        synchronized (this) {
+            float pre = getAmount(currency);
+            wallets.put(currency, amount);
+
+            return new TransactionModel(walletHolder, currency, pre, amount, operator, TransactionCause.STAFF_SET);
+        }
+    }
+
     public void takeAmount(String currency, float amount) {
-        float pre = getAmount(currency);
-        float post = pre - amount;
-        
-        if(post >= 0F)
-            wallets.put(currency, post);
+        takeAmount(currency, amount, false);
     }
     
+    public void takeAmount(String currency, float amount, boolean ignoreNegativeBalance) {
+        synchronized (this) {
+            float pre = getAmount(currency);
+            float post = pre - amount;
+
+            if(post >= 0F || ignoreNegativeBalance)
+                wallets.put(currency, post);
+        }
+    }
+
+    public TransactionModel takeAmount(String currency, float amount, String operator) {
+        return takeAmount(currency, amount, operator, false);
+    }
+
+    public TransactionModel takeAmount(String currency, float amount, String operator, boolean ignoreNegativeBalance) {
+        synchronized (this) {
+            float pre = getAmount(currency);
+            float post = pre - amount;
+
+            if(post >= 0F || ignoreNegativeBalance)
+                wallets.put(currency, post);
+
+            return new TransactionModel(walletHolder, currency, pre, post, operator, TransactionCause.STAFF_TAKE);
+        }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if(this == o) return true;
+        if(o == null || getClass() != o.getClass()) return false;
+
+        WalletModel that = (WalletModel) o;
+        return Objects.equals(walletHolder, that.walletHolder) &&
+                Objects.equals(wallets, that.wallets);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(walletHolder, wallets);
+    }
+
+    @Override
+    public String toString() {
+        return "Wallet{" +
+                "holder='" + walletHolder + '\'' +
+                ", wallets=" + wallets +
+                '}';
+    }
+
 }

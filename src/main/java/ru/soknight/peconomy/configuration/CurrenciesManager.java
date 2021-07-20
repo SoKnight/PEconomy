@@ -1,17 +1,17 @@
 package ru.soknight.peconomy.configuration;
 
+import lombok.Getter;
+import org.bukkit.ChatColor;
+import org.bukkit.configuration.ConfigurationSection;
+import ru.soknight.lib.configuration.AbstractConfiguration;
+import ru.soknight.lib.configuration.Configuration;
+import ru.soknight.peconomy.PEconomy;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
-
-import org.bukkit.configuration.ConfigurationSection;
-
-import lombok.Getter;
-import ru.soknight.lib.configuration.AbstractConfiguration;
-import ru.soknight.lib.configuration.Configuration;
-import ru.soknight.peconomy.PEconomy;
 
 public class CurrenciesManager extends AbstractConfiguration {
 
@@ -46,7 +46,10 @@ public class CurrenciesManager extends AbstractConfiguration {
         
         keys.forEach(id -> {
             ConfigurationSection subsection = section.getConfigurationSection(id);
-            
+
+            String name = subsection.getString("name", id);
+            ChatColor.translateAlternateColorCodes('&', name);
+
             String symbol = subsection.getString("symbol");
             if(symbol == null) {
                 logger.severe("Couldn't find the 'symbol' parameter for currency '" + id + "', loading skipped.");
@@ -56,7 +59,7 @@ public class CurrenciesManager extends AbstractConfiguration {
             float limit = (float) subsection.getDouble("max-amount", 0F);
             float newbie = (float) subsection.getDouble("newbie-amount", 0F);
             
-            CurrencyInstance currency = new CurrencyInstance(id, symbol, limit, newbie);
+            CurrencyInstance currency = new CurrencyInstance(id, name, symbol, limit, newbie);
             currencies.put(id, currency);
         });
         

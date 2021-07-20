@@ -1,13 +1,8 @@
 package ru.soknight.peconomy.command.peconomy;
 
-import java.text.DateFormat;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
-
 import ru.soknight.lib.argument.CommandArguments;
 import ru.soknight.lib.command.preset.subcommand.PermissibleSubcommand;
 import ru.soknight.lib.configuration.Configuration;
@@ -17,8 +12,12 @@ import ru.soknight.peconomy.configuration.CurrenciesManager;
 import ru.soknight.peconomy.configuration.CurrencyInstance;
 import ru.soknight.peconomy.database.DatabaseManager;
 import ru.soknight.peconomy.database.model.TransactionModel;
-import ru.soknight.peconomy.util.AmountFormatter;
-import ru.soknight.peconomy.util.OperatorFormatter;
+import ru.soknight.peconomy.format.AmountFormatter;
+import ru.soknight.peconomy.format.OperatorFormatter;
+
+import java.text.DateFormat;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class CommandHistory extends PermissibleSubcommand {
 
@@ -31,8 +30,11 @@ public class CommandHistory extends PermissibleSubcommand {
     private final DateFormat dateFormatter;
     
     public CommandHistory(
-            Configuration config, Messages messages, DatabaseManager databaseManager,
-            CurrenciesManager currenciesManager, DateFormat dateFormatter
+            Configuration config,
+            Messages messages,
+            DatabaseManager databaseManager,
+            CurrenciesManager currenciesManager,
+            DateFormat dateFormatter
     ) {
         super("peco.command.history", messages);
         
@@ -82,7 +84,7 @@ public class CommandHistory extends PermissibleSubcommand {
         boolean finalOther = other;
         String finalTarget = target;
         
-        databaseManager.getTransactionHistory(target).thenAcceptAsync(transactions -> {
+        databaseManager.getTransactionHistory(target).thenAccept(transactions -> {
             if(transactions == null || transactions.isEmpty()) {
                 messages.getAndSend(sender, "history.failed.no-transactions");
                 return;
@@ -127,20 +129,20 @@ public class CommandHistory extends PermissibleSubcommand {
     }
     
     private String formatTransaction(CommandSender sender, TransactionModel transaction) {
-        float pre = transaction.getPreBalance();
-        float post = transaction.getPostBalance();
+        float pre = transaction.getBalanceBefore();
+        float post = transaction.getBalanceAfter();
         
-        String type = transaction.getType();
+        String type = transaction.getCause();
         String typePath = type.toLowerCase().replace("_", ".");
         
-        String source = OperatorFormatter.format(config, transaction.getOperator(), sender);
+        String source = OperatorFormatter.format(config, messages, transaction.getSubject(), sender);
         String action = messages.getFormatted("action." + typePath, "%source%", source);
         
         CurrencyInstance currency = currenciesManager.getCurrency(transaction.getCurrency());
         
         return messages.getFormatted("history.body",
                 "%id%", transaction.getId(),
-                "%date%", dateFormatter.format(transaction.getTimestamp()),
+                "%date%", dateFormatter.format(transaction.getPassedAt()),
                 "%from%", AmountFormatter.format(pre),
                 "%to%", AmountFormatter.format(post),
                 "%currency%", currency == null ? "?" : currency.getSymbol(),

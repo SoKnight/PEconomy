@@ -1,16 +1,32 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <groupId>ru.soknight</groupId>
     <artifactId>peconomy</artifactId>
-    <version>2.2.1</version>
+    <version>2.3.0</version>
     
     <name>PEconomy</name>
     <description>An economy provider with unlimited currencies and Vault support</description>
+    <url>https://vk.me/soknight</url>
 
     <properties>
+        <!-- Building -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+
+        <!-- General dependencies -->
+        <spigot.api.version>1.13.2-R0.1-SNAPSHOT</spigot.api.version>
+        <sklibrary.version>1.13.3</sklibrary.version>
+        <lombok.version>1.18.20</lombok.version>
+
+        <!-- Additional dependencies -->
+        <placeholderapi.version>2.10.10</placeholderapi.version>
+        <vault.api.version>1.7</vault.api.version>
+
+        <!-- Maven plugins -->
+        <compiler.maven.plugin.version>3.8.1</compiler.maven.plugin.version>
+        <source.maven.plugin.version>3.2.0</source.maven.plugin.version>
     </properties>
 
     <repositories>
@@ -33,35 +49,39 @@
         <dependency>
            <groupId>org.spigotmc</groupId>
            <artifactId>spigot-api</artifactId>
-           <version>1.13.2-R0.1-SNAPSHOT</version>
+           <version>${spigot.api.version}</version>
            <scope>provided</scope>
         </dependency>
+
         <!-- Placeholders API -->
         <dependency>
          	<groupId>me.clip</groupId>
           	<artifactId>placeholderapi</artifactId>
-         	<version>2.10.9</version>
+         	<version>${placeholderapi.version}</version>
          	<scope>provided</scope>
         </dependency>
+
         <!-- SKLibrary -->
         <dependency>
             <groupId>com.github.SoKnight</groupId>
             <artifactId>SKLibrary</artifactId>
-            <version>1.10.1</version>
+            <version>${sklibrary.version}</version>
             <scope>provided</scope>
         </dependency>
+
         <!-- VaultAPI -->
         <dependency>
             <groupId>com.github.MilkBowl</groupId>
             <artifactId>VaultAPI</artifactId>
-            <version>1.7</version>
+            <version>${vault.api.version}</version>
             <scope>provided</scope>
         </dependency>
+
         <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.16</version>
+            <version>${lombok.version}</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
@@ -74,11 +94,24 @@
             </resource>
         </resources>
         <plugins>
-            <!-- Source plugin -->
+            <!-- Maven compiler plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${compiler.maven.plugin.version}</version>
+                <configuration>
+                    <compilerArgs>
+                        <arg>-Xlint:deprecation</arg>
+                        <arg>-Xlint:unchecked</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+
+            <!-- Maven source plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>${source.maven.plugin.version}</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>

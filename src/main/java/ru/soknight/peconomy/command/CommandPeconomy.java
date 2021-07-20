@@ -23,21 +23,26 @@ import ru.soknight.peconomy.database.DatabaseManager;
 public class CommandPeconomy extends ModifiedDispatcher {
     
     public CommandPeconomy(
-            PEconomy plugin, Configuration config, Messages messages,
-            DatabaseManager databaseManager, CurrenciesManager currenciesManager
+            PEconomy plugin,
+            Configuration config,
+            Messages messages,
+            DatabaseManager databaseManager,
+            CurrenciesManager currenciesManager
     ) {
         super("peconomy", messages);
         
         DateFormat dateFormatter = getDateFormatter(plugin, config);
         
         super.setExecutor("help", new CommandHelp(messages));
-        super.setExecutor("history", new CommandHistory(config, messages, databaseManager, currenciesManager, dateFormatter));
         super.setExecutor("info", new CommandInfo(config, messages, databaseManager, currenciesManager, dateFormatter));
+        super.setExecutor("history", new CommandHistory(config, messages, databaseManager, currenciesManager, dateFormatter));
         super.setExecutor("add", new CommandAdd(messages, databaseManager, currenciesManager));
         super.setExecutor("set", new CommandSet(messages, databaseManager, currenciesManager));
         super.setExecutor("reset", new CommandReset(messages, databaseManager, currenciesManager));
         super.setExecutor("take", new CommandTake(messages, databaseManager, currenciesManager));
         super.setExecutor("reload", new CommandReload(plugin, messages));
+
+        super.register(plugin, true);
     }
     
     private DateFormat getDateFormatter(Plugin plugin, Configuration config) {

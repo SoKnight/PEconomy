@@ -60,19 +60,19 @@ public class CommandHelp extends EnhancedHelpExecutor {
                         .descriptionFrom("take")
                         .permission("take")
                         .add()
-                // /peco history [player] [page]
-                .newLine()
-                        .command("peco history")
-                        .argumentsFrom("player-opt", "page")
-                        .descriptionFrom("history")
-                        .permission("history")
-                        .add()
                 // /peco info <id>
                 .newLine()
                         .command("peco info")
                         .argumentFrom("id")
                         .descriptionFrom("info")
                         .permission("info")
+                        .add()
+                // /peco history [player] [page]
+                .newLine()
+                        .command("peco history")
+                        .argumentsFrom("player-opt", "page")
+                        .descriptionFrom("history")
+                        .permission("history")
                         .add()
                 // /peco reload
                 .newLine()

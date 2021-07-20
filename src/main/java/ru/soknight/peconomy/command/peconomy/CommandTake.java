@@ -14,7 +14,7 @@ import ru.soknight.peconomy.configuration.CurrenciesManager;
 import ru.soknight.peconomy.configuration.CurrencyInstance;
 import ru.soknight.peconomy.database.DatabaseManager;
 import ru.soknight.peconomy.database.model.TransactionModel;
-import ru.soknight.peconomy.util.AmountFormatter;
+import ru.soknight.peconomy.format.AmountFormatter;
 
 public class CommandTake extends ArgumentableSubcommand {
 
@@ -46,7 +46,7 @@ public class CommandTake extends ArgumentableSubcommand {
             return;
         }
         
-        databaseManager.getWallet(walletHolder).thenAcceptAsync(wallet -> {
+        databaseManager.getWallet(walletHolder).thenAccept(wallet -> {
             if(wallet == null) {
                 messages.sendFormatted(sender, "error.unknown-wallet", "%player%", walletHolder);
                 return;
@@ -70,19 +70,14 @@ public class CommandTake extends ArgumentableSubcommand {
                 );
                 return;
             }
-            
-            wallet.takeAmount(currencyId, amount);
+
+            TransactionModel transaction = wallet.takeAmount(currencyId, amount, isPlayer(sender) ? sender.getName() : null);
             databaseManager.saveWallet(wallet).join();
+            databaseManager.saveTransaction(transaction).join();
             
             String operator = isPlayer(sender) ? sender.getName() : messages.get("console-operator");
             String poststr = AmountFormatter.format(post);
             String operation = messages.get("operation.decrease");
-            
-            // saving transaction
-            TransactionModel transaction = new TransactionModel(
-                    walletHolder, operator, currencyId, "take", pre, post
-            );
-            databaseManager.saveTransaction(transaction).join();
             
             // sending messages to sender and wallet owner if he is online
             messages.sendFormatted(sender, "take.success.operator",

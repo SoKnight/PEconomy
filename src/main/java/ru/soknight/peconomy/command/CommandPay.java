@@ -1,13 +1,8 @@
 package ru.soknight.peconomy.command;
 
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
-
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
 import ru.soknight.lib.argument.CommandArguments;
 import ru.soknight.lib.command.preset.standalone.OmnipotentCommand;
 import ru.soknight.lib.configuration.Configuration;
@@ -17,8 +12,13 @@ import ru.soknight.peconomy.configuration.CurrencyInstance;
 import ru.soknight.peconomy.database.DatabaseManager;
 import ru.soknight.peconomy.database.model.TransactionModel;
 import ru.soknight.peconomy.database.model.WalletModel;
-import ru.soknight.peconomy.util.AmountFormatter;
-import ru.soknight.peconomy.util.OperatorFormatter;
+import ru.soknight.peconomy.format.AmountFormatter;
+import ru.soknight.peconomy.format.OperatorFormatter;
+import ru.soknight.peconomy.transaction.TransactionCause;
+
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 public class CommandPay extends OmnipotentCommand {
     
@@ -29,8 +29,10 @@ public class CommandPay extends OmnipotentCommand {
     private final CurrenciesManager currenciesManager;
     
     public CommandPay(
-            Configuration config, Messages messages,
-            DatabaseManager databaseManager, CurrenciesManager currenciesManager
+            Configuration config,
+            Messages messages,
+            DatabaseManager databaseManager,
+            CurrenciesManager currenciesManager
     ) {
         super("pay", null, "peco.command.pay", 3, messages);
         
@@ -67,7 +69,7 @@ public class CommandPay extends OmnipotentCommand {
         
         CompletableFuture<WalletModel> receiverWalletFuture = databaseManager.getWallet(receiver);
         
-        databaseManager.getWallet(walletHolder).thenAcceptAsync(senderWallet -> {
+        databaseManager.getWallet(walletHolder).thenAccept(senderWallet -> {
             if(senderWallet == null) {
                 messages.sendFormatted(sender, "error.unknown-wallet", "%player%", walletHolder);
                 return;
@@ -118,16 +120,18 @@ public class CommandPay extends OmnipotentCommand {
             // updating database
             senderWallet.takeAmount(currencyId, amount);
             receiverWallet.addAmount(currencyId, amount);
+
             databaseManager.saveWallet(senderWallet).join();
             databaseManager.saveWallet(receiverWallet).join();
             
             // saving transactions
             TransactionModel senderTransaction = new TransactionModel(
-                    walletHolder, receiver, currencyId, "payment_outcoming", preSender, postSender
+                    walletHolder, currencyId, preSender, postSender, receiver, TransactionCause.PAYMENT_OUTCOMING
             );
             TransactionModel receiverTransaction = new TransactionModel(
-                    receiver, walletHolder, currencyId, "payment_incoming", preReceiver, postReceiver
+                    receiver, currencyId, preReceiver, postReceiver, walletHolder, TransactionCause.PAYMENT_INCOMING
             );
+
             databaseManager.saveTransaction(senderTransaction).join();
             databaseManager.saveTransaction(receiverTransaction).join();
             
@@ -147,7 +151,7 @@ public class CommandPay extends OmnipotentCommand {
                 messages.sendFormatted(receiverPlayer, "pay.success.receiver",
                         "%amount%", amountstr,
                         "%currency%", symbol,
-                        "%sender%", OperatorFormatter.format(config, walletHolder, receiverPlayer),
+                        "%sender%", OperatorFormatter.format(config, messages, walletHolder, receiverPlayer),
                         "%from%", preReceiverStr,
                         "%operation%", messages.get("operation.increase"),
                         "%to%", postReceiverStr,

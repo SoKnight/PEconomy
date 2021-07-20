@@ -1,9 +1,6 @@
 package ru.soknight.peconomy.command.peconomy;
 
-import java.text.DateFormat;
-
 import org.bukkit.command.CommandSender;
-
 import ru.soknight.lib.argument.CommandArguments;
 import ru.soknight.lib.command.preset.subcommand.ArgumentableSubcommand;
 import ru.soknight.lib.configuration.Configuration;
@@ -11,8 +8,10 @@ import ru.soknight.lib.configuration.Messages;
 import ru.soknight.peconomy.configuration.CurrenciesManager;
 import ru.soknight.peconomy.configuration.CurrencyInstance;
 import ru.soknight.peconomy.database.DatabaseManager;
-import ru.soknight.peconomy.util.AmountFormatter;
-import ru.soknight.peconomy.util.OperatorFormatter;
+import ru.soknight.peconomy.format.AmountFormatter;
+import ru.soknight.peconomy.format.OperatorFormatter;
+
+import java.text.DateFormat;
 
 public class CommandInfo extends ArgumentableSubcommand {
 
@@ -25,8 +24,11 @@ public class CommandInfo extends ArgumentableSubcommand {
     private final DateFormat dateFormatter;
     
     public CommandInfo(
-            Configuration config, Messages messages, DatabaseManager databaseManager,
-            CurrenciesManager currenciesManager, DateFormat dateFormatter
+            Configuration config,
+            Messages messages,
+            DatabaseManager databaseManager,
+            CurrenciesManager currenciesManager,
+            DateFormat dateFormatter
     ) {
         super(null, "peco.command.info", 1, messages);
         
@@ -47,7 +49,7 @@ public class CommandInfo extends ArgumentableSubcommand {
             return;
         }
         
-        databaseManager.getTransactionByID(id).thenAcceptAsync(transaction -> {
+        databaseManager.getTransactionByID(id).thenAccept(transaction -> {
             if(transaction == null) {
                 messages.sendFormatted(sender, "info.failed.unknown-id", "%id%", id);
                 return;
@@ -59,13 +61,13 @@ public class CommandInfo extends ArgumentableSubcommand {
                 return;
             }
             
-            float pre = transaction.getPreBalance();
-            float post = transaction.getPostBalance();
+            float pre = transaction.getBalanceBefore();
+            float post = transaction.getBalanceAfter();
             
-            String type = transaction.getType();
+            String type = transaction.getCause();
             String typePath = type.toLowerCase().replace("_", ".");
             
-            String source = OperatorFormatter.format(config, transaction.getOperator(), sender);
+            String source = OperatorFormatter.format(config, messages, transaction.getSubject(), sender);
             String action = messages.getFormatted("action." + typePath, "%source%", source);
             
             CurrencyInstance currency = currenciesManager.getCurrency(transaction.getCurrency());
@@ -76,9 +78,9 @@ public class CommandInfo extends ArgumentableSubcommand {
                     "%action%", action,
                     "%pre%", AmountFormatter.format(pre),
                     "%post%", AmountFormatter.format(post),
-                    "%currency%", currency == null ? "???" : currency.getID(),
+                    "%currency%", currency == null ? "???" : currency.getName(),
                     "%symbol%", currency == null ? "?" : currency.getSymbol(),
-                    "%date%", dateFormatter.format(transaction.getTimestamp())
+                    "%date%", dateFormatter.format(transaction.getPassedAt())
             );
         });
     }

@@ -1,25 +1,25 @@
 package ru.soknight.peconomy.hook;
 
-import java.util.Arrays;
-import java.util.List;
-
+import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
-
-import me.clip.placeholderapi.expansion.PlaceholderExpansion;
+import org.jetbrains.annotations.NotNull;
 import ru.soknight.peconomy.database.DatabaseManager;
 import ru.soknight.peconomy.database.model.WalletModel;
-import ru.soknight.peconomy.util.AmountFormatter;
+import ru.soknight.peconomy.format.AmountFormatter;
 
-public class PEcoExpansion extends PlaceholderExpansion {
+import java.util.Arrays;
+import java.util.List;
+
+public final class PEconomyExpansion extends PlaceholderExpansion {
 
     private static final List<String> SUBIDS = Arrays.asList("balance", "has");
     
     private final Plugin plugin;
     private final DatabaseManager databaseManager;
     
-    public PEcoExpansion(Plugin plugin, DatabaseManager databaseManager) {
+    public PEconomyExpansion(Plugin plugin, DatabaseManager databaseManager) {
         this.plugin = plugin;
         this.databaseManager = databaseManager;
         
@@ -30,22 +30,22 @@ public class PEcoExpansion extends PlaceholderExpansion {
     }
     
     @Override
-    public String getAuthor() {
+    public @NotNull String getAuthor() {
         return "SoKnight";
     }
 
     @Override
-    public String getIdentifier() {
+    public @NotNull String getIdentifier() {
         return "peco";
     }
 
     @Override
-    public String getVersion() {
+    public @NotNull String getVersion() {
         return plugin.getDescription().getVersion();
     }
     
     @Override
-    public String onPlaceholderRequest(Player player, String id) {
+    public String onPlaceholderRequest(Player player, @NotNull String id) {
         if(player == null) return ChatColor.RED + "PLAYER IS NULL";
 
         String[] parts = id.split("_");

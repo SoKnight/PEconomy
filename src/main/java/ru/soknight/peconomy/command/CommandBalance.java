@@ -14,7 +14,7 @@ import ru.soknight.lib.configuration.Configuration;
 import ru.soknight.lib.configuration.Messages;
 import ru.soknight.peconomy.configuration.CurrenciesManager;
 import ru.soknight.peconomy.database.DatabaseManager;
-import ru.soknight.peconomy.util.AmountFormatter;
+import ru.soknight.peconomy.format.AmountFormatter;
 
 public class CommandBalance extends PermissibleCommand {
     
@@ -25,8 +25,10 @@ public class CommandBalance extends PermissibleCommand {
     private final CurrenciesManager currenciesManager;
     
     public CommandBalance(
-            Configuration config, Messages messages,
-            DatabaseManager databaseManager, CurrenciesManager currenciesManager
+            Configuration config,
+            Messages messages,
+            DatabaseManager databaseManager,
+            CurrenciesManager currenciesManager
     ) {
         super("balance", "peco.command.balance", messages);
         
@@ -39,7 +41,7 @@ public class CommandBalance extends PermissibleCommand {
 
     @Override
     public void executeCommand(CommandSender sender, CommandArguments args) {
-        String target = null;
+        String target;
         boolean other = false;
         
         if(args.isEmpty()) {
@@ -117,15 +119,16 @@ public class CommandBalance extends PermissibleCommand {
     }
     
     private boolean shouldShowBalance(String currencyId) {
-        if(currenciesManager.isCurrency(currencyId)) return true;
+        if(currenciesManager.isCurrency(currencyId))
+            return true;
         
         return !config.getBoolean("hide-unknown-currencies");
     }
     
     private String getCurrencySymbol(String currencyId) {
-        if(!currenciesManager.isCurrency(currencyId)) return "N/A";
-        
-        return currenciesManager.getCurrency(currencyId).getSymbol();
+        return currenciesManager.isCurrency(currencyId)
+                ? currenciesManager.getCurrency(currencyId).getSymbol()
+                : "N/A";
     }
     
 }
