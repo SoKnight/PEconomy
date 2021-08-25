@@ -1,20 +1,20 @@
 package ru.soknight.peconomy.command;
 
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
-
 import ru.soknight.lib.argument.CommandArguments;
 import ru.soknight.lib.command.preset.standalone.PermissibleCommand;
 import ru.soknight.lib.configuration.Configuration;
 import ru.soknight.lib.configuration.Messages;
+import ru.soknight.peconomy.PEconomy;
 import ru.soknight.peconomy.configuration.CurrenciesManager;
 import ru.soknight.peconomy.database.DatabaseManager;
-import ru.soknight.peconomy.format.AmountFormatter;
+import ru.soknight.peconomy.format.Formatter;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class CommandBalance extends PermissibleCommand {
     
@@ -25,6 +25,7 @@ public class CommandBalance extends PermissibleCommand {
     private final CurrenciesManager currenciesManager;
     
     public CommandBalance(
+            PEconomy plugin,
             Configuration config,
             Messages messages,
             DatabaseManager databaseManager,
@@ -37,6 +38,8 @@ public class CommandBalance extends PermissibleCommand {
         
         this.databaseManager = databaseManager;
         this.currenciesManager = currenciesManager;
+
+        register(plugin, true);
     }
 
     @Override
@@ -53,18 +56,20 @@ public class CommandBalance extends PermissibleCommand {
             target = sender.getName();
         } else {
             target = args.get(0);
+            other = true;
             
             if(isPlayer(sender) && !target.equals(sender.getName())) {
-                if(!sender.hasPermission("peco.command.balance.other"))
+                if(!sender.hasPermission("peco.command.balance.other")) {
                     target = sender.getName();
-                else
-                    other = true;
+                    other = false;
+                }
             }
         }
         
         String walletHolder = target;
         boolean forOtherPlayer = other;
-        
+
+        Formatter formatter = PEconomy.getAPI().getFormatter();
         databaseManager.getWallet(walletHolder).thenAcceptAsync(wallet -> {
             if(wallet == null || wallet.getWallets().isEmpty()) {
                 if(forOtherPlayer)
@@ -81,7 +86,7 @@ public class CommandBalance extends PermissibleCommand {
                     .filter(e -> shouldShowBalance(e.getKey()))
                     .sorted((e1, e2) -> e1.getKey().compareToIgnoreCase(e2.getKey()))
                     .map(e -> messages.getFormatted("balance.format",
-                            "%amount%", AmountFormatter.format(e.getValue()),
+                            "%amount%", formatter.formatAmount(e.getValue()),
                             "%currency%", getCurrencySymbol(e.getKey())))
                     .collect(Collectors.joining(messages.get("balance.separator")));
             
@@ -94,7 +99,7 @@ public class CommandBalance extends PermissibleCommand {
                 return;
             }
             
-            // overwise we showing the wallet's balance
+            // overwise we're showing the wallet's balance
             if(forOtherPlayer)
                 messages.sendFormatted(sender, "balance.success.other",
                         "%player%", walletHolder,

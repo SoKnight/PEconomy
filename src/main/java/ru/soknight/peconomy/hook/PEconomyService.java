@@ -6,15 +6,15 @@ import net.milkbowl.vault.economy.EconomyResponse.ResponseType;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
 import ru.soknight.lib.configuration.Configuration;
 import ru.soknight.lib.configuration.Messages;
+import ru.soknight.peconomy.api.PEconomyAPI;
 import ru.soknight.peconomy.configuration.CurrenciesManager;
 import ru.soknight.peconomy.configuration.CurrencyInstance;
 import ru.soknight.peconomy.database.DatabaseManager;
 import ru.soknight.peconomy.database.model.TransactionModel;
 import ru.soknight.peconomy.database.model.WalletModel;
-import ru.soknight.peconomy.format.AmountFormatter;
-import ru.soknight.peconomy.format.OperatorFormatter;
 
 import java.util.List;
 
@@ -33,12 +33,12 @@ public final class PEconomyService implements Economy {
     private final String singular;
     
     public PEconomyService(
-            Plugin plugin,
-            VaultEconomyProvider economyProvider,
-            Configuration config,
-            Messages messages,
-            DatabaseManager databaseManager,
-            CurrenciesManager currenciesManager
+            @NotNull Plugin plugin,
+            @NotNull VaultEconomyProvider economyProvider,
+            @NotNull Configuration config,
+            @NotNull Messages messages,
+            @NotNull DatabaseManager databaseManager,
+            @NotNull CurrenciesManager currenciesManager
     ) {
         this.economyProvider = economyProvider;
         this.config = config;
@@ -58,7 +58,7 @@ public final class PEconomyService implements Economy {
     }
 
     @Override
-    public String getName() {
+    public @NotNull String getName() {
         return "PEconomy";
     }
 
@@ -74,7 +74,7 @@ public final class PEconomyService implements Economy {
 
     @Override
     public String format(double amount) {
-        return AmountFormatter.format((float) amount);
+        return PEconomyAPI.get().getFormatter().formatAmount((float) amount);
     }
 
     @Override
@@ -93,7 +93,7 @@ public final class PEconomyService implements Economy {
     }
 
     @Override
-    public boolean hasAccount(OfflinePlayer player) {
+    public boolean hasAccount(@NotNull OfflinePlayer player) {
         return hasAccount(player.getName());
     }
 
@@ -103,7 +103,7 @@ public final class PEconomyService implements Economy {
     }
 
     @Override
-    public boolean hasAccount(OfflinePlayer player, String worldName) {
+    public boolean hasAccount(@NotNull OfflinePlayer player, String worldName) {
         return hasAccount(player.getName());
     }
 
@@ -120,7 +120,7 @@ public final class PEconomyService implements Economy {
     }
 
     @Override
-    public double getBalance(OfflinePlayer player) {
+    public double getBalance(@NotNull OfflinePlayer player) {
         return getBalance(player.getName());
     }
 
@@ -130,7 +130,7 @@ public final class PEconomyService implements Economy {
     }
 
     @Override
-    public double getBalance(OfflinePlayer player, String world) {
+    public double getBalance(@NotNull OfflinePlayer player, String world) {
         return getBalance(player.getName());
     }
 
@@ -147,7 +147,7 @@ public final class PEconomyService implements Economy {
     }
 
     @Override
-    public boolean has(OfflinePlayer player, double amount) {
+    public boolean has(@NotNull OfflinePlayer player, double amount) {
         return has(player.getName(), amount);
     }
 
@@ -157,13 +157,13 @@ public final class PEconomyService implements Economy {
     }
 
     @Override
-    public boolean has(OfflinePlayer player, String worldName, double amount) {
+    public boolean has(@NotNull OfflinePlayer player, String worldName, double amount) {
         return has(player.getName(), amount);
     }
 
     @Override
     @SuppressWarnings("deprecation")
-    public EconomyResponse withdrawPlayer(String playerName, double amount) {
+    public @NotNull EconomyResponse withdrawPlayer(String playerName, double amount) {
         if(currency == null)
             return new EconomyResponse(amount, 0, ResponseType.NOT_IMPLEMENTED, null);
         
@@ -178,7 +178,7 @@ public final class PEconomyService implements Economy {
         
         if(post < 0) {
             String message = messages.getFormatted("take.not-enough",
-                    "%amount%", AmountFormatter.format(pre),
+                    "%amount%", format(pre),
                     "%currency%", currency.getSymbol(),
                     "%player%", playerName,
                     "%requested%", format(amount)
@@ -190,19 +190,21 @@ public final class PEconomyService implements Economy {
         databaseManager.saveWallet(wallet);
         
         // saving transaction
-        if(config.getBoolean("hooks.vault.transactions", true)) {
+        if(config.getBoolean("hooks.vault.transactions", true))
             databaseManager.saveTransaction(transaction).join();
-            
+
+        // alert the player
+        if(config.getBoolean("hooks.vault.verbose", true)) {
             OfflinePlayer offline = Bukkit.getOfflinePlayer(playerName);
             if(offline != null && offline.isOnline()) {
                 messages.sendFormatted(offline.getPlayer(), "take.success.holder",
                         "%amount%", format(amount),
                         "%currency%", currency.getSymbol(),
                         "%player%", playerName,
-                        "%from%", AmountFormatter.format(pre),
+                        "%from%", format(pre),
                         "%operation%", messages.get("operation.decrease"),
-                        "%to%", AmountFormatter.format(post),
-                        "%source%", OperatorFormatter.format(config, messages, "#vault", offline.getPlayer()),
+                        "%to%", format(post),
+                        "%source%", PEconomyAPI.get().getFormatter().formatOperator("#vault", offline.getPlayer()),
                         "%id%", transaction.getId()
                 );
             }
@@ -212,23 +214,23 @@ public final class PEconomyService implements Economy {
     }
 
     @Override
-    public EconomyResponse withdrawPlayer(OfflinePlayer player, double amount) {
+    public @NotNull EconomyResponse withdrawPlayer(@NotNull OfflinePlayer player, double amount) {
         return withdrawPlayer(player.getName(), amount);
     }
 
     @Override
-    public EconomyResponse withdrawPlayer(String playerName, String worldName, double amount) {
+    public @NotNull EconomyResponse withdrawPlayer(String playerName, String worldName, double amount) {
         return withdrawPlayer(playerName, amount);
     }
 
     @Override
-    public EconomyResponse withdrawPlayer(OfflinePlayer player, String worldName, double amount) {
+    public @NotNull EconomyResponse withdrawPlayer(@NotNull OfflinePlayer player, String worldName, double amount) {
         return withdrawPlayer(player.getName(), amount);
     }
 
     @Override
     @SuppressWarnings("deprecation")
-    public EconomyResponse depositPlayer(String playerName, double amount) {
+    public @NotNull EconomyResponse depositPlayer(String playerName, double amount) {
         if(currency == null)
             return new EconomyResponse(amount, 0, ResponseType.NOT_IMPLEMENTED, null);
         
@@ -243,9 +245,9 @@ public final class PEconomyService implements Economy {
         
         float limit = currency.getLimit();
         if(limit != 0 && post > limit) {
-            String limitstr = AmountFormatter.format(limit);
+            String limitstr = format(limit);
             String message = messages.getFormatted("add.limit",
-                    "%amount%", AmountFormatter.format(pre),
+                    "%amount%", format(pre),
                     "%currency%", currency.getSymbol(),
                     "%player%", playerName,
                     "%limit%", limitstr);
@@ -256,19 +258,21 @@ public final class PEconomyService implements Economy {
         databaseManager.saveWallet(walletModel);
         
         // saving transaction
-        if(config.getBoolean("hooks.vault.transactions", true)) {
+        if(config.getBoolean("hooks.vault.transactions", true))
             databaseManager.saveTransaction(transaction).join();
-            
+
+        // alert the player
+        if(config.getBoolean("hooks.vault.verbose", true)) {
             OfflinePlayer offline = Bukkit.getOfflinePlayer(playerName);
             if(offline != null && offline.isOnline()) {
                 messages.sendFormatted(offline.getPlayer(), "add.success.holder",
                         "%amount%", format(amount),
                         "%currency%", currency.getSymbol(),
                         "%player%", playerName,
-                        "%from%", AmountFormatter.format(pre),
+                        "%from%", format(pre),
                         "%operation%", messages.get("operation.increase"),
-                        "%to%", AmountFormatter.format(post),
-                        "%source%", OperatorFormatter.format(config, messages, "#vault", offline.getPlayer()),
+                        "%to%", format(post),
+                        "%source%", PEconomyAPI.get().getFormatter().formatOperator("#vault", offline.getPlayer()),
                         "%id%", transaction.getId()
                 );
             }
@@ -278,17 +282,17 @@ public final class PEconomyService implements Economy {
     }
 
     @Override
-    public EconomyResponse depositPlayer(OfflinePlayer player, double amount) {
+    public @NotNull EconomyResponse depositPlayer(@NotNull OfflinePlayer player, double amount) {
         return depositPlayer(player.getName(), amount);
     }
 
     @Override
-    public EconomyResponse depositPlayer(String playerName, String worldName, double amount) {
+    public @NotNull EconomyResponse depositPlayer(String playerName, String worldName, double amount) {
         return depositPlayer(playerName, amount);
     }
 
     @Override
-    public EconomyResponse depositPlayer(OfflinePlayer player, String worldName, double amount) {
+    public @NotNull EconomyResponse depositPlayer(@NotNull OfflinePlayer player, String worldName, double amount) {
         return depositPlayer(player.getName(), amount);
     }
 
@@ -364,7 +368,7 @@ public final class PEconomyService implements Economy {
     }
 
     @Override
-    public boolean createPlayerAccount(OfflinePlayer player) {
+    public boolean createPlayerAccount(@NotNull OfflinePlayer player) {
         return createPlayerAccount(player.getName());
     }
 
@@ -374,7 +378,7 @@ public final class PEconomyService implements Economy {
     }
 
     @Override
-    public boolean createPlayerAccount(OfflinePlayer player, String worldName) {
+    public boolean createPlayerAccount(@NotNull OfflinePlayer player, String worldName) {
         return createPlayerAccount(player.getName());
     }
 

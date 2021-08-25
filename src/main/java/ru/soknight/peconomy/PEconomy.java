@@ -1,7 +1,10 @@
 package ru.soknight.peconomy;
 
+import com.j256.ormlite.field.DataPersisterManager;
+import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 import ru.soknight.lib.configuration.Configuration;
 import ru.soknight.lib.configuration.Messages;
 import ru.soknight.lib.database.Database;
@@ -14,14 +17,16 @@ import ru.soknight.peconomy.configuration.MessagesProvider;
 import ru.soknight.peconomy.database.DatabaseManager;
 import ru.soknight.peconomy.database.model.TransactionModel;
 import ru.soknight.peconomy.database.model.WalletModel;
-import ru.soknight.peconomy.format.AmountFormatter;
+import ru.soknight.peconomy.database.persister.LocalDateTimePersister;
+import ru.soknight.peconomy.format.Formatter;
 import ru.soknight.peconomy.hook.PEconomyExpansion;
 import ru.soknight.peconomy.hook.VaultEconomyProvider;
 import ru.soknight.peconomy.listener.PlayerJoinListener;
+import ru.soknight.peconomy.notification.NotificationManager;
 
 import java.sql.SQLException;
 
-public class PEconomy extends JavaPlugin {
+public final class PEconomy extends JavaPlugin {
 
     private static PEconomyAPI apiInstance;
     
@@ -31,7 +36,12 @@ public class PEconomy extends JavaPlugin {
     
     private DatabaseManager databaseManager;
     private CurrenciesManager currenciesManager;
+
+    private NotificationManager notificationManager;
     private VaultEconomyProvider economyProvider;
+
+    @Getter
+    private Formatter formatter;
     
     @Override
     public void onEnable() {
@@ -40,6 +50,8 @@ public class PEconomy extends JavaPlugin {
         
         // database initialization
         try {
+            DataPersisterManager.registerDataPersisters(LocalDateTimePersister.getSingleton());
+
             Database database = new Database(this, config)
                     .createTable(WalletModel.class)
                     .createTable(TransactionModel.class)
@@ -60,6 +72,14 @@ public class PEconomy extends JavaPlugin {
         // currencies manager initialization
         this.currenciesManager = new CurrenciesManager(this, config);
 
+        // formatter initialization
+        this.formatter = new Formatter(this, config, messages);
+        this.formatter.reload();
+
+        // notification manager initialization
+        this.notificationManager = new NotificationManager(this, config);
+        this.notificationManager.register();
+
         // Vault economy provider initialization
         this.economyProvider = new VaultEconomyProvider(this);
         
@@ -73,17 +93,35 @@ public class PEconomy extends JavaPlugin {
         hookInto();
         
         // PEconomy API initialization
-        apiInstance = new PEconomyAPIImpl(databaseManager, currenciesManager, economyProvider);
+        apiInstance = new PEconomyAPIImpl(databaseManager, currenciesManager, economyProvider, formatter);
         
         getLogger().info("Yep, I am ready!");
     }
     
     @Override
     public void onDisable() {
+        // shutting down balance top updating tasks
+        if(currenciesManager != null)
+            currenciesManager.shutdownUpdatingTasks();
+
+        // unregistering Vault hook
         if(economyProvider != null)
             economyProvider.unregisterEconomyService();
+
+        // shutting down database connection
         if(databaseManager != null)
             databaseManager.shutdown();
+    }
+
+    /**
+     * Gets initialized API instance or null if PEconomy wasn't initialized fully
+     * @return PEconomy API instance (maybe null)
+     */
+    public static @NotNull PEconomyAPI getAPI() {
+        if(apiInstance == null)
+            throw new IllegalStateException("PEconomy API is unavailable now, probably the plugin was not initialized correctly!");
+
+        return apiInstance;
     }
     
     private void hookInto() {
@@ -91,7 +129,7 @@ public class PEconomy extends JavaPlugin {
             // PlaceholdersAPI hook
             if(config.getBoolean("hooks.papi", true)) {
                 if(Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-                    new PEconomyExpansion(this, databaseManager);
+                    new PEconomyExpansion(this, databaseManager, currenciesManager);
                 } else {
                     getLogger().info("PlaceholdersAPI isn't installed, ignoring it...");
                 }
@@ -115,41 +153,28 @@ public class PEconomy extends JavaPlugin {
         
         this.messagesProvider = new MessagesProvider(this, config);
         this.messages = messagesProvider.getMessages();
-
-        updateAmountFormat();
     }
     
     private void registerCommands() {
-        new CommandPeconomy(this, config, messages, databaseManager, currenciesManager).register(this, true);
-        new CommandBalance(config, messages, databaseManager, currenciesManager).register(this, true);
-        new CommandPay(config, messages, databaseManager, currenciesManager).register(this, true);
+        new CommandPeconomy(this, messages, databaseManager, currenciesManager, notificationManager);
+        new CommandBalance(this, config, messages, databaseManager, currenciesManager);
+        new CommandPay(this, messages, databaseManager, currenciesManager);
     }
     
     private void registerListeners() {
+        // --- bukkit events listeners
         new PlayerJoinListener(this, databaseManager, currenciesManager);
-    }
-
-    private void updateAmountFormat() {
-        String format = config.getString("amount-format");
-        AmountFormatter.setFormat(this, format);
     }
 
     public void reload() {
         config.refresh();
         messagesProvider.update(config);
-        
+
+        // currencies reloading
         currenciesManager.refreshCurrencies();
-        
-        registerCommands();
-        updateAmountFormat();
-    }
-    
-    /**
-     * Gets initialized API instance or null if PEconomy wasn't initialized fully
-     * @return PEconomy API instance (may be null)
-     */
-    public static PEconomyAPI getAPI() {
-        return apiInstance;
+
+        // formatter updating
+        formatter.reload();
     }
     
 }

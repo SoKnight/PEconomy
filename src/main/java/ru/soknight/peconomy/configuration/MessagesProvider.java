@@ -1,16 +1,16 @@
 package ru.soknight.peconomy.configuration;
 
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.List;
-
 import lombok.Getter;
 import ru.soknight.lib.configuration.Configuration;
 import ru.soknight.lib.configuration.Messages;
 import ru.soknight.peconomy.PEconomy;
 
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.List;
+
 @Getter
-public class MessagesProvider {
+public final class MessagesProvider {
 
     private static final List<String> LOCALES = Arrays.asList("en", "ru");
     

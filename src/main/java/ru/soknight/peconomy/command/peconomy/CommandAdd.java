@@ -1,34 +1,42 @@
 package ru.soknight.peconomy.command.peconomy;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
 import ru.soknight.lib.argument.CommandArguments;
 import ru.soknight.lib.command.preset.subcommand.ArgumentableSubcommand;
 import ru.soknight.lib.configuration.Messages;
+import ru.soknight.peconomy.PEconomy;
 import ru.soknight.peconomy.configuration.CurrenciesManager;
 import ru.soknight.peconomy.configuration.CurrencyInstance;
 import ru.soknight.peconomy.database.DatabaseManager;
 import ru.soknight.peconomy.database.model.TransactionModel;
-import ru.soknight.peconomy.format.AmountFormatter;
+import ru.soknight.peconomy.format.Formatter;
+import ru.soknight.peconomy.notification.NotificationManager;
+import ru.soknight.peconomy.notification.NotificationType;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class CommandAdd extends ArgumentableSubcommand {
 
     private final Messages messages;
-    
     private final DatabaseManager databaseManager;
     private final CurrenciesManager currenciesManager;
-    
-    public CommandAdd(Messages messages, DatabaseManager databaseManager, CurrenciesManager currenciesManager) {
+    private final NotificationManager notificationManager;
+
+    public CommandAdd(
+            Messages messages,
+            DatabaseManager databaseManager,
+            CurrenciesManager currenciesManager,
+            NotificationManager notificationManager
+    ) {
         super(null, "peco.command.add", 3, messages);
         
         this.messages = messages;
         this.databaseManager = databaseManager;
         this.currenciesManager = currenciesManager;
+        this.notificationManager = notificationManager;
     }
 
     @Override
@@ -46,7 +54,8 @@ public class CommandAdd extends ArgumentableSubcommand {
             messages.sendFormatted(sender, "error.unknown-currency", "%currency%", currencyId);
             return;
         }
-        
+
+        Formatter formatter = PEconomy.getAPI().getFormatter();
         databaseManager.getWallet(walletHolder).thenAccept(wallet -> {
             if(wallet == null) {
                 messages.sendFormatted(sender, "error.unknown-wallet", "%player%", walletHolder);
@@ -63,7 +72,7 @@ public class CommandAdd extends ArgumentableSubcommand {
             float limit = currency.getLimit();
             if(limit > 0F && post > limit) {
                 messages.sendFormatted(sender, "add.failed.limit-reached",
-                        "%limit%", AmountFormatter.format(limit),
+                        "%limit%", formatter.formatAmount(limit),
                         "%currency%", symbol
                 );
                 return;
@@ -74,9 +83,9 @@ public class CommandAdd extends ArgumentableSubcommand {
             databaseManager.saveTransaction(transaction).join();
             
             String operator = isPlayer(sender) ? sender.getName() : messages.get("console-operator");
-            String amountstr = AmountFormatter.format(amount);
-            String prestr = AmountFormatter.format(pre);
-            String poststr = AmountFormatter.format(post);
+            String amountstr = formatter.formatAmount(amount);
+            String prestr = formatter.formatAmount(pre);
+            String poststr = formatter.formatAmount(post);
             String operation = messages.get("operation.increase");
             
             // sending messages to sender and wallet owner if he is online
@@ -91,7 +100,9 @@ public class CommandAdd extends ArgumentableSubcommand {
             );
             
             Player player = Bukkit.getPlayer(walletHolder);
-            if(player != null)
+            if(player == null)
+                notificationManager.notify(transaction, NotificationType.STAFF_ADD);
+            else
                 messages.sendFormatted(player, "add.success.holder",
                         "%amount%", amountstr,
                         "%currency%", symbol,

@@ -1,20 +1,20 @@
 package ru.soknight.peconomy.command.peconomy;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
 import ru.soknight.lib.argument.CommandArguments;
 import ru.soknight.lib.command.preset.subcommand.ArgumentableSubcommand;
 import ru.soknight.lib.configuration.Messages;
+import ru.soknight.peconomy.PEconomy;
 import ru.soknight.peconomy.configuration.CurrenciesManager;
 import ru.soknight.peconomy.configuration.CurrencyInstance;
 import ru.soknight.peconomy.database.DatabaseManager;
 import ru.soknight.peconomy.database.model.TransactionModel;
-import ru.soknight.peconomy.format.AmountFormatter;
+import ru.soknight.peconomy.format.Formatter;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class CommandReset extends ArgumentableSubcommand {
     
@@ -40,7 +40,8 @@ public class CommandReset extends ArgumentableSubcommand {
             messages.sendFormatted(sender, "error.unknown-currency", "%currency%", currencyId);
             return;
         }
-        
+
+        Formatter formatter = PEconomy.getAPI().getFormatter();
         databaseManager.getWallet(walletHolder).thenAccept(wallet -> {
             if(wallet == null) {
                 messages.sendFormatted(sender, "error.unknown-wallet", "%player%", walletHolder);
@@ -61,9 +62,8 @@ public class CommandReset extends ArgumentableSubcommand {
             TransactionModel transaction = wallet.resetWallet(currencyId, isPlayer(sender) ? sender.getName() : null);
             databaseManager.saveWallet(wallet).join();
             databaseManager.saveTransaction(transaction).join();
-            
-            String operator = isPlayer(sender) ? sender.getName() : messages.get("console-operator");
-            String prestr = AmountFormatter.format(pre);
+
+            String prestr = formatter.formatAmount(pre);
             String operation = messages.get("operation.decrease");
             
             // sending messages to sender and wallet owner if he is online

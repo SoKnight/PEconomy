@@ -3,8 +3,8 @@
 
     <groupId>ru.soknight</groupId>
     <artifactId>peconomy</artifactId>
-    <version>2.3.0</version>
-    
+    <version>2.4.0</version>
+
     <name>PEconomy</name>
     <description>An economy provider with unlimited currencies and Vault support</description>
     <url>https://vk.me/soknight</url>
@@ -17,7 +17,8 @@
 
         <!-- General dependencies -->
         <spigot.api.version>1.13.2-R0.1-SNAPSHOT</spigot.api.version>
-        <sklibrary.version>1.13.3</sklibrary.version>
+        <bungeecord.api.version>1.17-R0.1-SNAPSHOT</bungeecord.api.version>
+        <sklibrary.version>1.13.8</sklibrary.version>
         <lombok.version>1.18.20</lombok.version>
 
         <!-- Additional dependencies -->
@@ -33,6 +34,10 @@
         <repository>
             <id>spigot-repo</id>
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+        </repository>
+        <repository>
+            <id>bungeecord-repo</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </repository>
         <repository>
             <id>placeholderapi</id>
@@ -51,6 +56,14 @@
            <artifactId>spigot-api</artifactId>
            <version>${spigot.api.version}</version>
            <scope>provided</scope>
+        </dependency>
+
+        <!-- BungeeCord API -->
+        <dependency>
+            <groupId>net.md-5</groupId>
+            <artifactId>bungeecord-api</artifactId>
+            <version>${bungeecord.api.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <!-- Placeholders API -->
@@ -87,6 +100,7 @@
     </dependencies>
 
     <build>
+        <finalName>${project.name}</finalName>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>

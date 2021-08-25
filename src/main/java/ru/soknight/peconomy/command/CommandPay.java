@@ -5,15 +5,14 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import ru.soknight.lib.argument.CommandArguments;
 import ru.soknight.lib.command.preset.standalone.OmnipotentCommand;
-import ru.soknight.lib.configuration.Configuration;
 import ru.soknight.lib.configuration.Messages;
+import ru.soknight.peconomy.PEconomy;
 import ru.soknight.peconomy.configuration.CurrenciesManager;
 import ru.soknight.peconomy.configuration.CurrencyInstance;
 import ru.soknight.peconomy.database.DatabaseManager;
 import ru.soknight.peconomy.database.model.TransactionModel;
 import ru.soknight.peconomy.database.model.WalletModel;
-import ru.soknight.peconomy.format.AmountFormatter;
-import ru.soknight.peconomy.format.OperatorFormatter;
+import ru.soknight.peconomy.format.Formatter;
 import ru.soknight.peconomy.transaction.TransactionCause;
 
 import java.util.List;
@@ -21,26 +20,25 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 public class CommandPay extends OmnipotentCommand {
-    
-    private final Configuration config;
+
     private final Messages messages;
     
     private final DatabaseManager databaseManager;
     private final CurrenciesManager currenciesManager;
     
     public CommandPay(
-            Configuration config,
+            PEconomy plugin,
             Messages messages,
             DatabaseManager databaseManager,
             CurrenciesManager currenciesManager
     ) {
         super("pay", null, "peco.command.pay", 3, messages);
-        
-        this.config = config;
+
         this.messages = messages;
-        
         this.databaseManager = databaseManager;
         this.currenciesManager = currenciesManager;
+
+        register(plugin, true);
     }
     
     @Override
@@ -68,7 +66,8 @@ public class CommandPay extends OmnipotentCommand {
         }
         
         CompletableFuture<WalletModel> receiverWalletFuture = databaseManager.getWallet(receiver);
-        
+
+        Formatter formatter = PEconomy.getAPI().getFormatter();
         databaseManager.getWallet(walletHolder).thenAccept(senderWallet -> {
             if(senderWallet == null) {
                 messages.sendFormatted(sender, "error.unknown-wallet", "%player%", walletHolder);
@@ -82,14 +81,14 @@ public class CommandPay extends OmnipotentCommand {
             }
             
             CurrencyInstance currency = currenciesManager.getCurrency(currencyId);
-            String amountstr = AmountFormatter.format(amount);
+            String amountstr = formatter.formatAmount(amount);
             String symbol = currency.getSymbol();
             
             float preSender = senderWallet.getAmount(currencyId);
             float postSender = preSender - amount;
             
-            String preSenderStr = AmountFormatter.format(preSender);
-            String postSenderStr = AmountFormatter.format(postSender);
+            String preSenderStr = formatter.formatAmount(preSender);
+            String postSenderStr = formatter.formatAmount(postSender);
             
             // checking for 0 reached (for payment sender)
             if(postSender < 0F) {
@@ -104,14 +103,14 @@ public class CommandPay extends OmnipotentCommand {
             float preReceiver = receiverWallet.getAmount(currencyId);
             float postReceiver = preReceiver + amount;
             
-            String preReceiverStr = AmountFormatter.format(preReceiver);
-            String postReceiverStr = AmountFormatter.format(postReceiver);
+            String preReceiverStr = formatter.formatAmount(preReceiver);
+            String postReceiverStr = formatter.formatAmount(postReceiver);
             
             // checking for balance limit reached
             float limit = currency.getLimit();
             if(limit > 0F && postReceiver > limit) {
                 messages.sendFormatted(sender, "pay.failed.limit-reached",
-                        "%limit%", AmountFormatter.format(limit),
+                        "%limit%", formatter.formatAmount(limit),
                         "%currency%", symbol
                 );
                 return;
@@ -151,7 +150,7 @@ public class CommandPay extends OmnipotentCommand {
                 messages.sendFormatted(receiverPlayer, "pay.success.receiver",
                         "%amount%", amountstr,
                         "%currency%", symbol,
-                        "%sender%", OperatorFormatter.format(config, messages, walletHolder, receiverPlayer),
+                        "%sender%", formatter.formatOperator(walletHolder, receiverPlayer),
                         "%from%", preReceiverStr,
                         "%operation%", messages.get("operation.increase"),
                         "%to%", postReceiverStr,

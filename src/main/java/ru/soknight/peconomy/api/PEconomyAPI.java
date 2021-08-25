@@ -1,12 +1,36 @@
 package ru.soknight.peconomy.api;
 
+import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import ru.soknight.peconomy.PEconomy;
+import ru.soknight.peconomy.balancetop.BalanceTop;
+import ru.soknight.peconomy.balancetop.BalanceTopPlace;
+import ru.soknight.peconomy.balancetop.function.BalanceTopPlaceFinder;
+import ru.soknight.peconomy.balancetop.function.BalanceTopPlacesProvider;
 import ru.soknight.peconomy.configuration.CurrencyInstance;
 import ru.soknight.peconomy.database.model.TransactionModel;
 import ru.soknight.peconomy.database.model.WalletModel;
+import ru.soknight.peconomy.format.Formatter;
+import ru.soknight.peconomy.format.ObjectFormatter;
 
 import java.util.Collection;
 
 public interface PEconomyAPI {
+
+    /**
+     * Proxy-method for the {@link PEconomy#getAPI()}
+     * @return An API instance
+     */
+    static @NotNull PEconomyAPI get() {
+        return PEconomy.getAPI();
+    }
+
+    /**
+     * Get formatter used for formatting some things
+     * @return The PEconomy {@link Formatter} instance
+     */
+    @NotNull Formatter getFormatter();
 
     /***************************
      *    BANKING PROVIDING    *
@@ -16,12 +40,45 @@ public interface PEconomyAPI {
      * Register your custom banking provider for the Vault economy system
      * @param provider a provider instance to register
      */
-    void registerBankingProvider(BankingProvider provider);
+    void registerBankingProvider(@NotNull BankingProvider provider);
 
     /**
      * Unregister already registered banking provider if it's exists
      */
     void unregisterBankingProvider();
+
+    /*********************
+     *    BALANCE TOP    *
+     ********************/
+
+    /**
+     * Create your custom balance top instance with custom formatter and more
+     * @param plugin a plugin that requested this balance top
+     * @param currencyId currency ID that you want to use
+     * @param topSize amount of places in this balance top
+     * @param formatter balance top place formatter (instance -> string)
+     * @return A new {@link BalanceTop} instance
+     */
+    @NotNull BalanceTop createBalanceTop(@NotNull Plugin plugin, @NotNull String currencyId, int topSize, @Nullable ObjectFormatter<BalanceTopPlace> formatter);
+
+    /**
+     * Create a balance top builder to customize your balance top with it
+     * @param plugin a plugin that requested this balance top
+     * @return A new {@link BalanceTop.Builder} instance
+     */
+    @NotNull BalanceTop.Builder buildBalanceTop(@NotNull Plugin plugin);
+
+    /**
+     * Get balance top place provider (usually just a database query executor)
+     * @return The PEconomy places provider
+     */
+    @NotNull BalanceTopPlacesProvider getBalanceTopPlacesProvider();
+
+    /**
+     * Get balance top place finder (usually just a database query executor)
+     * @return The PEconomy place finder
+     */
+    @NotNull BalanceTopPlaceFinder getBalanceTopPlaceFinder();
 
     /*****************
      *    WALLETS    *

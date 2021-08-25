@@ -1,16 +1,16 @@
 package ru.soknight.peconomy.database.model;
 
-import java.util.HashMap;
-import java.util.Objects;
-
 import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import ru.soknight.peconomy.configuration.CurrencyInstance;
 import ru.soknight.peconomy.transaction.TransactionCause;
+
+import java.util.HashMap;
+import java.util.Objects;
 
 @Getter
 @NoArgsConstructor
@@ -20,7 +20,7 @@ public class WalletModel {
     @DatabaseField(columnName = "owner", id = true)
     private String walletHolder;
 
-    @DatabaseField(columnName = "wallets", dataType = DataType.SERIALIZABLE)
+    @DatabaseField(columnName = "wallets", canBeNull = false, dataType = DataType.SERIALIZABLE)
     private HashMap<String, Float> wallets;
     
     public WalletModel(String walletHolder) {
@@ -28,7 +28,7 @@ public class WalletModel {
         this.wallets = new HashMap<>();
     }
     
-    public void loadCurrency(CurrencyInstance currency) {
+    public void loadCurrency(@NotNull CurrencyInstance currency) {
         if(!wallets.containsKey(currency.getId()))
             addAmount(currency.getId(), currency.getNewbieAmount());
     }

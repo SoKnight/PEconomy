@@ -5,52 +5,45 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import ru.soknight.lib.argument.CommandArguments;
 import ru.soknight.lib.command.preset.subcommand.PermissibleSubcommand;
-import ru.soknight.lib.configuration.Configuration;
 import ru.soknight.lib.configuration.Messages;
 import ru.soknight.lib.tool.CollectionsTool;
+import ru.soknight.peconomy.PEconomy;
 import ru.soknight.peconomy.configuration.CurrenciesManager;
 import ru.soknight.peconomy.configuration.CurrencyInstance;
 import ru.soknight.peconomy.database.DatabaseManager;
 import ru.soknight.peconomy.database.model.TransactionModel;
-import ru.soknight.peconomy.format.AmountFormatter;
-import ru.soknight.peconomy.format.OperatorFormatter;
+import ru.soknight.peconomy.format.Formatter;
 
-import java.text.DateFormat;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class CommandHistory extends PermissibleSubcommand {
 
-    private final Configuration config;
+    private final PEconomy plugin;
     private final Messages messages;
     
     private final DatabaseManager databaseManager;
     private final CurrenciesManager currenciesManager;
     
-    private final DateFormat dateFormatter;
-    
     public CommandHistory(
-            Configuration config,
+            PEconomy plugin,
             Messages messages,
             DatabaseManager databaseManager,
-            CurrenciesManager currenciesManager,
-            DateFormat dateFormatter
+            CurrenciesManager currenciesManager
     ) {
         super("peco.command.history", messages);
-        
-        this.config = config;
+
+        this.plugin = plugin;
         this.messages = messages;
         
         this.databaseManager = databaseManager;
         this.currenciesManager = currenciesManager;
-        
-        this.dateFormatter = dateFormatter;
     }
 
     @Override
     public void executeCommand(CommandSender sender, CommandArguments args) {
         String target = sender.getName();
-        boolean other = false;
+        boolean other;
         int page = 1;
         
         if(args.isEmpty()) {
@@ -69,12 +62,13 @@ public class CommandHistory extends PermissibleSubcommand {
             target = args.get(0);
             page = args.getAsInteger(1);
         }
-        
+
+        other = true;
         if(isPlayer(sender) && !target.equals(sender.getName())) {
-            if(!sender.hasPermission("peco.command.history.other"))
+            if(!sender.hasPermission("peco.command.history.other")) {
                 target = sender.getName();
-            else
-                other = true;
+                other = false;
+            }
         }
         
         if(page < 1)
@@ -134,17 +128,18 @@ public class CommandHistory extends PermissibleSubcommand {
         
         String type = transaction.getCause();
         String typePath = type.toLowerCase().replace("_", ".");
-        
-        String source = OperatorFormatter.format(config, messages, transaction.getSubject(), sender);
+
+        Formatter formatter = plugin.getFormatter();
+        String source = formatter.formatOperator(transaction.getOperator(), sender);
         String action = messages.getFormatted("action." + typePath, "%source%", source);
         
         CurrencyInstance currency = currenciesManager.getCurrency(transaction.getCurrency());
         
         return messages.getFormatted("history.body",
                 "%id%", transaction.getId(),
-                "%date%", dateFormatter.format(transaction.getPassedAt()),
-                "%from%", AmountFormatter.format(pre),
-                "%to%", AmountFormatter.format(post),
+                "%date%", formatter.formatDateTime(transaction.getPassedAt()),
+                "%from%", formatter.formatAmount(pre),
+                "%to%", formatter.formatAmount(post),
                 "%currency%", currency == null ? "?" : currency.getSymbol(),
                 "%operation%", messages.get("operation." + (pre < post ? "increase" : "decrease")),
                 "%action%", action

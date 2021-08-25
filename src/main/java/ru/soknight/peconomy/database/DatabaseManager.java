@@ -1,38 +1,35 @@
 package ru.soknight.peconomy.database;
 
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.logging.Logger;
-
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.support.ConnectionSource;
-
+import org.jetbrains.annotations.NotNull;
 import ru.soknight.lib.database.Database;
 import ru.soknight.lib.executable.quiet.AbstractQuietExecutor;
-import ru.soknight.lib.executable.quiet.ThrowableHandler;
 import ru.soknight.peconomy.PEconomy;
 import ru.soknight.peconomy.database.model.TransactionModel;
 import ru.soknight.peconomy.database.model.WalletModel;
 
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
 public final class DatabaseManager extends AbstractQuietExecutor {
-    
-    private final Logger logger;
+
     private final ConnectionSource connection;
     
     private final Dao<WalletModel, String> walletsDao;
     private final Dao<TransactionModel, Integer> transactionsDao;
     
-    public DatabaseManager(PEconomy plugin, Database database) throws SQLException {
-        super(ThrowableHandler.createForDatabase(plugin));
-
-        this.logger = plugin.getLogger();
+    public DatabaseManager(@NotNull PEconomy plugin, @NotNull Database database) throws SQLException {
         this.connection = database.establishConnection();
         
         this.walletsDao = DaoManager.createDao(connection, WalletModel.class);
         this.transactionsDao = DaoManager.createDao(connection, TransactionModel.class);
+
+        super.useDatabaseThrowableHandler(plugin);
+        super.useCachedThreadPoolAsyncExecutor();
     }
     
     public void shutdown() {
@@ -45,6 +42,20 @@ public final class DatabaseManager extends AbstractQuietExecutor {
     /*****************
      *    WALLETS    *
      ****************/
+
+    private @NotNull WalletModel createWallet(String player) {
+        WalletModel wallet = new WalletModel(player);
+        saveWallet(wallet).join();
+        return wallet;
+    }
+
+    public CompletableFuture<WalletModel> getOrCreateWallet(String player) {
+        return getWallet(player).thenApply(wallet -> wallet != null ? wallet : createWallet(player));
+    }
+
+    public CompletableFuture<List<WalletModel>> getAllWallets() {
+        return supplyQuietlyAsync(walletsDao::queryForAll);
+    }
     
     public CompletableFuture<WalletModel> getWallet(String player) {
         return supplyQuietlyAsync(() -> walletsDao.queryForId(player));

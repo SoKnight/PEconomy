@@ -1,20 +1,20 @@
 package ru.soknight.peconomy.command.peconomy;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
 import ru.soknight.lib.argument.CommandArguments;
 import ru.soknight.lib.command.preset.subcommand.ArgumentableSubcommand;
 import ru.soknight.lib.configuration.Messages;
+import ru.soknight.peconomy.PEconomy;
 import ru.soknight.peconomy.configuration.CurrenciesManager;
 import ru.soknight.peconomy.configuration.CurrencyInstance;
 import ru.soknight.peconomy.database.DatabaseManager;
 import ru.soknight.peconomy.database.model.TransactionModel;
-import ru.soknight.peconomy.format.AmountFormatter;
+import ru.soknight.peconomy.format.Formatter;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class CommandSet extends ArgumentableSubcommand {
     
@@ -45,7 +45,8 @@ public class CommandSet extends ArgumentableSubcommand {
             messages.sendFormatted(sender, "error.unknown-currency", "%currency%", currencyId);
             return;
         }
-        
+
+        Formatter formatter = PEconomy.getAPI().getFormatter();
         databaseManager.getWallet(walletHolder).thenAccept(wallet -> {
             if(wallet == null) {
                 messages.sendFormatted(sender, "error.unknown-wallet", "%player%", walletHolder);
@@ -61,7 +62,7 @@ public class CommandSet extends ArgumentableSubcommand {
             float limit = currency.getLimit();
             if(limit > 0F && amount > limit) {
                 messages.sendFormatted(sender, "set.failed.limit-reached",
-                        "%limit%", AmountFormatter.format(limit),
+                        "%limit%", formatter.formatAmount(limit),
                         "%currency%", symbol
                 );
                 return;
@@ -70,7 +71,7 @@ public class CommandSet extends ArgumentableSubcommand {
             if(pre == amount) {
                 messages.sendFormatted(sender, "set.failed.already-equals",
                         "%player%", walletHolder,
-                        "%amount%", AmountFormatter.format(amount),
+                        "%amount%", formatter.formatAmount(amount),
                         "%currency%", symbol
                 );
                 return;
@@ -79,11 +80,10 @@ public class CommandSet extends ArgumentableSubcommand {
             TransactionModel transaction = wallet.setAmount(currencyId, amount, isPlayer(sender) ? sender.getName() : null);
             databaseManager.saveWallet(wallet).join();
             databaseManager.saveTransaction(transaction).join();
-            
-            String operator = isPlayer(sender) ? sender.getName() : messages.get("console-operator");
-            String amountstr = AmountFormatter.format(amount);
-            String prestr = AmountFormatter.format(pre);
-            String poststr = AmountFormatter.format(amount);
+
+            String amountstr = formatter.formatAmount(amount);
+            String prestr = formatter.formatAmount(pre);
+            String poststr = formatter.formatAmount(amount);
             String operation = messages.get("operation." + (pre < amount ? "increase" : "decrease"));
             
             // sending messages to sender and wallet owner if he is online

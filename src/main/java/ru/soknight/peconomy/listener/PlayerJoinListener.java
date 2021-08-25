@@ -1,24 +1,23 @@
 package ru.soknight.peconomy.listener;
 
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.Plugin;
-
+import org.jetbrains.annotations.NotNull;
 import ru.soknight.peconomy.configuration.CurrenciesManager;
 import ru.soknight.peconomy.database.DatabaseManager;
 import ru.soknight.peconomy.database.model.WalletModel;
 
-public class PlayerJoinListener implements Listener {
+public final class PlayerJoinListener implements Listener {
 
     private final DatabaseManager databaseManager;
     private final CurrenciesManager currenciesManager;
     
     public PlayerJoinListener(
-            Plugin plugin,
-            DatabaseManager databaseManager,
-            CurrenciesManager currenciesManager
+            @NotNull Plugin plugin,
+            @NotNull DatabaseManager databaseManager,
+            @NotNull CurrenciesManager currenciesManager
     ) {
         this.databaseManager = databaseManager;
         this.currenciesManager = currenciesManager;
@@ -27,7 +26,7 @@ public class PlayerJoinListener implements Listener {
     }
 
     @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) {
+    public void onPlayerJoin(@NotNull PlayerJoinEvent event) {
         String name = event.getPlayer().getName();
         
         // moved to async task

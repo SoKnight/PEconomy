@@ -22,6 +22,9 @@
 #  Available placeholders:
 #  - %peco_balance_CURRENCY% - Balance of currency on player's wallet
 #  - %peco_has_CURRENCY_AMOUNT% - Player has amount of currency on him balance or not (true/false)
+#  - %peco_top_CURRENCY_POSITION% - Formatted place #POTISION in the balance top by CURRENCY
+#  - %peco_toppn_CURRENCY% - Player's position (number) in the balance top by CURRENCY
+#  - %peco_toppf_CURRENCY% - Player's formatted position (string) in the balance top by CURRENCY
 #
 #
 # Configuration of database connection
@@ -68,8 +71,11 @@ hooks:
   # Should plugin register self as economy provider for Vault?
   vault: 
     enabled: true
-    # Should to save transactions for operations via Vault and alert a player about it?
+    # Should to alert the player about Vault provided balance operations?
+    verbose: true
+    # Should to save transactions for operations provided by Vault?
     transactions: true
+    
   # Should plugin add own placeholders into PlaceholdersAPI?
   papi: true
 
@@ -83,6 +89,12 @@ extended-players-completions: true
 # Overwise unknown currency will be marked with 'N/A' symbol
 hide-unknown-currencies: false
 
+# Should plugin use BungeeCord instant notifications system or not
+# Example: When a wallet owner is playing on other server, he always will
+# be notified about any operations related to him wallet
+# {!} Do not use that if you don't use BungeeCord!
+bungeecord-notifications: false
+
 # Wallet balances and just amounts format
 # Default value is '%.2f' where '2' is amount of digits after the floating point
 amount-format: '%.2f'
@@ -93,7 +105,7 @@ transactions-history:
   enabled: true
 
   # Transaction date format
-  date-format: "dd.MM.yy - kk:mm:ss"
+  date-format: "dd.MM.yy - HH:mm:ss"
 
 # Configuration of transaction source hiding
 transaction-source-hiding:
