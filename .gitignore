@@ -1,6 +1,9 @@
 # Created by https://www.gitignore.io/api/java,linux,maven,eclipse
 # Edit at https://www.gitignore.io/?templates=java,linux,maven,eclipse
 
+# ignore .idea shit
+.idea/
+
 # ignore bash scripts
 *.sh
 
