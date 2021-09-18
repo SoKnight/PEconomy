@@ -1,11 +1,11 @@
 # ------------------------------------------------------------------
 #
-# Файл сообщений ${project.name} для русской локализации
+# Файл сообщений PEconomy для русской локализации
 # Сгенерирован версией плагина ${project.version}
 #
 # Автор и разработчик: SoKnight
 #
-# ВиКи на Github: https://github.com/SoKnight/${project.name}/wiki
+# ВиКи на Github: https://github.com/SoKnight/PEconomy/wiki
 # Страница на SpigotMC: https://www.spigotmc.org/resources/peconomy.73827/
 #
 # ------------------------------------------------------------------
@@ -36,7 +36,7 @@ operation:
   increase: '&a»'
   decrease: '&c»'
 
-# Balance add
+# Добавление средств на баланс
 add:
   failed:
     limit-reached: "&cДанная транзакция может превысить лимит — %limit%%currency%."
@@ -44,7 +44,7 @@ add:
     operator: "&fДобавлено &b%amount%%currency% &fна счёт &b%player%&f: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)"
     holder: '&6| &fВаш счёт пополнен на &b%amount%%currency%&f: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)'
 
-# Balance set
+# Изменение баланса
 set:
   failed:
     limit-reached: "&cДанная транзакция может превысить лимит — %limit%%currency%."
@@ -53,7 +53,7 @@ set:
     operator: "&fИзменён счёт &b%player%: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)"
     holder: '&6| &fВаш счёт был изменён: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)'
 
-# Balance reset
+# Сброс баланса
 reset:
   failed:
     already: "&cСчёт для этой валюты уже пуст на кошельке %player%."
@@ -61,7 +61,7 @@ reset:
     operator: "&fСчёт &b%player% &fобнулён: &b%from%%currency% %operation% &b0%currency% &7(#%id%)"
     holder: '&6| &fВаш счёт был обнулён: &b%from%%currency% %operation% &b0%currency% &7(#%id%)'
 
-# Balance take
+# Снятие средств с баланса
 take:
   failed:
     not-enough: "&cНа счёте %player% только %amount%%currency%, что меньше запрошенных %requested%%currency%."
@@ -79,9 +79,9 @@ balance:
     other: "&fБаланс кошелька %player%: &r%balance%"
     self: "&fВаш баланс: &r%balance%"
 
-  # 'format' and 'separator' is a backend values which will be used for formatting value for %balance% placeholder
-  # 'separator' separates currencies amounts if there are several of them
-  # By default plugin will display empty currencies wallets, but you can disable it in config.yml
+  # 'format' и 'separator' используются для форматирование плейсхолдера %balance%
+  # 'separator' является разделителем для нескольких валютных счетов
+  # По-умолчаю плагин будет отображать пустые счета, но Вы можете отключить это в config.yml
   format: "&b%amount%%currency%"
   separator: "&f, "
 
@@ -91,6 +91,7 @@ pay:
     to-self: "&cЭто бесполезно, разве нет?"
     not-enough: "&cНа вашем счёте только %amount%%currency%, что меньше запрошенных %requested%%currency%."
     limit-reached: "&cДанная транзакция может превысить лимит (%limit%%currency%) для получателя платежа."
+    untransferable: "&cВы не можете переводить средства в этой валюте."
   success:
     sender: "&fОтправлено &b%amount%%currency% &fна кошелёк &b%receiver%&f, ваш баланс изменён: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)"
     receiver: '&6| &fВы получили перевод &b%amount%%currency% &fот &b%sender%&f: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)'

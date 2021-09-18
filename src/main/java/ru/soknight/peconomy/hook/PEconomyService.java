@@ -15,11 +15,16 @@ import ru.soknight.peconomy.configuration.CurrencyInstance;
 import ru.soknight.peconomy.database.DatabaseManager;
 import ru.soknight.peconomy.database.model.TransactionModel;
 import ru.soknight.peconomy.database.model.WalletModel;
+import ru.soknight.peconomy.event.initiator.Initiator;
+import ru.soknight.peconomy.event.wallet.TransactionFinishEvent;
+import ru.soknight.peconomy.event.wallet.TransactionPrepareEvent;
 
 import java.util.List;
 
 @SuppressWarnings("deprecation")
 public final class PEconomyService implements Economy {
+
+    private static final Initiator INITIATOR = Initiator.VAULT;
 
     private final VaultEconomyProvider economyProvider;
     private final Configuration config;
@@ -173,7 +178,7 @@ public final class PEconomyService implements Economy {
             return new EconomyResponse(amount, 0D, ResponseType.FAILURE, message);
         }
         
-        float pre = wallet.getAmount(this.currency.getId());
+        float pre = wallet.getAmount(currency.getId());
         float post = pre - (float) amount;
         
         if(post < 0) {
@@ -186,15 +191,26 @@ public final class PEconomyService implements Economy {
             return new EconomyResponse(amount, pre, ResponseType.FAILURE, message);
         }
 
-        TransactionModel transaction = wallet.takeAmount(this.currency.getId(), (float) amount, "#vault");
+        TransactionModel transaction = wallet.takeAmount(currency.getId(), (float) amount, "#vault");
+
+        // processing prepare event
+        TransactionPrepareEvent event = new TransactionPrepareEvent(wallet, INITIATOR, transaction);
+        event.fireAsync().join();
+
+        if(event.isCancelled())
+            return new EconomyResponse(amount, pre, ResponseType.FAILURE, null);
+
         databaseManager.saveWallet(wallet);
         
         // saving transaction
         if(config.getBoolean("hooks.vault.transactions", true))
             databaseManager.saveTransaction(transaction).join();
 
+        // processing finish event
+        new TransactionFinishEvent(wallet, INITIATOR, transaction).fireAsync();
+
         // alert the player
-        if(config.getBoolean("hooks.vault.verbose", true)) {
+        if(config.getBoolean("hooks.vault.verbose", true) && !event.isQuiet()) {
             OfflinePlayer offline = Bukkit.getOfflinePlayer(playerName);
             if(offline != null && offline.isOnline()) {
                 messages.sendFormatted(offline.getPlayer(), "take.success.holder",
@@ -234,13 +250,13 @@ public final class PEconomyService implements Economy {
         if(currency == null)
             return new EconomyResponse(amount, 0, ResponseType.NOT_IMPLEMENTED, null);
         
-        WalletModel walletModel = databaseManager.getWallet(playerName).join();
-        if(walletModel == null) {
+        WalletModel wallet = databaseManager.getWallet(playerName).join();
+        if(wallet == null) {
             String message = messages.getFormatted("error.unknown-wallet", "%player%", playerName);
             return new EconomyResponse(amount, 0D, ResponseType.FAILURE, message);
         }
         
-        float pre = walletModel.getAmount(this.currency.getId());
+        float pre = wallet.getAmount(currency.getId());
         float post = pre + (float) amount;
         
         float limit = currency.getLimit();
@@ -254,15 +270,26 @@ public final class PEconomyService implements Economy {
             return new EconomyResponse(amount, pre, ResponseType.FAILURE, message);
         }
 
-        TransactionModel transaction = walletModel.addAmount(this.currency.getId(), (float) amount, "#vault");
-        databaseManager.saveWallet(walletModel);
+        TransactionModel transaction = wallet.addAmount(currency.getId(), (float) amount, "#vault");
+
+        // processing prepare event
+        TransactionPrepareEvent event = new TransactionPrepareEvent(wallet, INITIATOR, transaction);
+        event.fireAsync().join();
+
+        if(event.isCancelled())
+            return new EconomyResponse(amount, pre, ResponseType.FAILURE, null);
+
+        databaseManager.saveWallet(wallet);
         
         // saving transaction
         if(config.getBoolean("hooks.vault.transactions", true))
             databaseManager.saveTransaction(transaction).join();
 
+        // processing finish event
+        new TransactionFinishEvent(wallet, INITIATOR, transaction).fireAsync();
+
         // alert the player
-        if(config.getBoolean("hooks.vault.verbose", true)) {
+        if(config.getBoolean("hooks.vault.verbose", true) && !event.isQuiet()) {
             OfflinePlayer offline = Bukkit.getOfflinePlayer(playerName);
             if(offline != null && offline.isOnline()) {
                 messages.sendFormatted(offline.getPlayer(), "add.success.holder",

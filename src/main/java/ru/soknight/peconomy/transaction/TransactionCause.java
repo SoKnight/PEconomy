@@ -11,6 +11,7 @@ public enum TransactionCause {
     STAFF_TAKE("take"),
     PAYMENT_OUTCOMING,
     PAYMENT_INCOMING,
+    FAILED,
     UNKNOWN;
 
     private final String id;
@@ -29,6 +30,22 @@ public enum TransactionCause {
                 return cause;
 
         return UNKNOWN;
+    }
+
+    public boolean hasFailed() {
+        return this == FAILED;
+    }
+
+    public boolean isStaffOperation() {
+        switch (this) {
+            case STAFF_ADD:
+            case STAFF_SET:
+            case STAFF_RESET:
+            case STAFF_TAKE:
+                return true;
+            default:
+                return false;
+        }
     }
 
 }

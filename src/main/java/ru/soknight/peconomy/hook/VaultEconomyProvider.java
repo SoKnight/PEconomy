@@ -14,6 +14,7 @@ import ru.soknight.peconomy.database.DatabaseManager;
 public final class VaultEconomyProvider {
 
     private final Plugin plugin;
+
     private BankingProvider bankingProvider;
     private PEconomyService service;
 

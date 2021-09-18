@@ -3,6 +3,7 @@ package ru.soknight.peconomy.configuration;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import ru.soknight.peconomy.balancetop.BalanceTop;
 
 import java.util.Objects;
@@ -11,17 +12,19 @@ import java.util.Objects;
 @AllArgsConstructor
 public final class CurrencyInstance {
 
-    private final String id;
-    private final String name;
-    private final String symbol;
+    private final @NotNull String id;
+    private final @NotNull String name;
+    private final @NotNull String symbol;
     private final float limit;
     private final float newbieAmount;
+    private final boolean visible;
+    private final boolean transferable;
 
-    private final BalanceTopSetup balanceTopSetup;
-    private final BalanceTop balanceTop;
+    private final @Nullable BalanceTopSetup balanceTopSetup;
+    private final @Nullable BalanceTop balanceTop;
     
-    public CurrencyInstance(String id, String name, String symbol) {
-        this(id, name, symbol, 0F, 0F, null, null);
+    public CurrencyInstance(@NotNull String id, @NotNull String name, @NotNull String symbol) {
+        this(id, name, symbol, 0F, 0F, true, true, null, null);
     }
 
     public boolean useBalanceTop() {
@@ -36,16 +39,21 @@ public final class CurrencyInstance {
         CurrencyInstance that = (CurrencyInstance) o;
         return Float.compare(that.limit, limit) == 0 &&
                 Float.compare(that.newbieAmount, newbieAmount) == 0 &&
+                visible == that.visible &&
+                transferable == that.transferable &&
                 Objects.equals(id, that.id) &&
                 Objects.equals(name, that.name) &&
                 Objects.equals(symbol, that.symbol) &&
-                Objects.equals(balanceTop, that.balanceTop) &&
-                Objects.equals(balanceTopSetup, that.balanceTopSetup);
+                Objects.equals(balanceTopSetup, that.balanceTopSetup) &&
+                Objects.equals(balanceTop, that.balanceTop);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, symbol, limit, newbieAmount, balanceTop, balanceTopSetup);
+        return Objects.hash(
+                id, name, symbol, limit, newbieAmount, visible,
+                transferable, balanceTopSetup, balanceTop
+        );
     }
 
     @Override
@@ -56,8 +64,10 @@ public final class CurrencyInstance {
                 ", symbol='" + symbol + '\'' +
                 ", limit=" + limit +
                 ", newbieAmount=" + newbieAmount +
-                ", balanceTop=" + balanceTop +
+                ", visible=" + visible +
+                ", transferable=" + transferable +
                 ", balanceTopSetup=" + balanceTopSetup +
+                ", balanceTop=" + balanceTop +
                 '}';
     }
 

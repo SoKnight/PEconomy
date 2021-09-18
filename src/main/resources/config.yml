@@ -89,12 +89,6 @@ extended-players-completions: true
 # Overwise unknown currency will be marked with 'N/A' symbol
 hide-unknown-currencies: false
 
-# Should plugin use BungeeCord instant notifications system or not
-# Example: When a wallet owner is playing on other server, he always will
-# be notified about any operations related to him wallet
-# {!} Do not use that if you don't use BungeeCord!
-bungeecord-notifications: false
-
 # Wallet balances and just amounts format
 # Default value is '%.2f' where '2' is amount of digits after the floating point
 amount-format: '%.2f'

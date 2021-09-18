@@ -4,7 +4,7 @@ import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import ru.soknight.peconomy.PEconomy;
+import ru.soknight.peconomy.PEconomyPlugin;
 import ru.soknight.peconomy.balancetop.BalanceTopPlace;
 import ru.soknight.peconomy.configuration.CurrenciesManager;
 import ru.soknight.peconomy.configuration.CurrencyInstance;
@@ -15,11 +15,11 @@ import java.util.Optional;
 
 public final class PEconomyExpansion extends PlaceholderExpansion {
     
-    private final PEconomy plugin;
+    private final PEconomyPlugin plugin;
     private final DatabaseManager databaseManager;
     private final CurrenciesManager currenciesManager;
     
-    public PEconomyExpansion(PEconomy plugin, DatabaseManager databaseManager, CurrenciesManager currenciesManager) {
+    public PEconomyExpansion(PEconomyPlugin plugin, DatabaseManager databaseManager, CurrenciesManager currenciesManager) {
         this.plugin = plugin;
         this.databaseManager = databaseManager;
         this.currenciesManager = currenciesManager;

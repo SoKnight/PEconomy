@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import ru.soknight.peconomy.transaction.TransactionCause;
 
 import java.time.LocalDateTime;
@@ -27,14 +28,21 @@ public class TransactionModel {
     private String currency;
     @DatabaseField(columnName = "type", canBeNull = false)
     private String cause;
-    @DatabaseField(columnName = "preBalance", canBeNull = false) // why this case was used for column names?..
+    @DatabaseField(columnName = "preBalance", canBeNull = false)
     private float balanceBefore;
     @DatabaseField(columnName = "postBalance", canBeNull = false)
     private float balanceAfter;
     @DatabaseField(columnName = "date", canBeNull = false)
     private LocalDateTime passedAt;
 
-    public TransactionModel(String walletHolder, String currency, float balanceBefore, float balanceAfter, String operator, String cause) {
+    public TransactionModel(
+            @NotNull String walletHolder,
+            @NotNull String currency,
+            float balanceBefore,
+            float balanceAfter,
+            @Nullable String operator,
+            @NotNull String cause
+    ) {
         this.walletHolder = walletHolder;
         this.currency = currency;
         this.balanceBefore = balanceBefore;
@@ -44,12 +52,23 @@ public class TransactionModel {
         this.passedAt = LocalDateTime.now();
     }
 
-    public TransactionModel(String walletHolder, String currency, float balanceBefore, float balanceAfter, String operator, @NotNull TransactionCause cause) {
+    public TransactionModel(
+            @NotNull String walletHolder,
+            @NotNull String currency,
+            float balanceBefore,
+            float balanceAfter,
+            @Nullable String operator,
+            @NotNull TransactionCause cause
+    ) {
         this(walletHolder, currency, balanceBefore, balanceAfter, operator, cause.getId());
     }
 
     public boolean isSuccess() {
         return !cause.equalsIgnoreCase("failed");
+    }
+
+    public void makeFailed() {
+        this.cause = TransactionCause.FAILED.getId();
     }
 
     @Override

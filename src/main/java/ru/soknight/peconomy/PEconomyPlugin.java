@@ -22,11 +22,10 @@ import ru.soknight.peconomy.format.Formatter;
 import ru.soknight.peconomy.hook.PEconomyExpansion;
 import ru.soknight.peconomy.hook.VaultEconomyProvider;
 import ru.soknight.peconomy.listener.PlayerJoinListener;
-import ru.soknight.peconomy.notification.NotificationManager;
 
 import java.sql.SQLException;
 
-public final class PEconomy extends JavaPlugin {
+public final class PEconomyPlugin extends JavaPlugin {
 
     private static PEconomyAPI apiInstance;
     
@@ -37,7 +36,6 @@ public final class PEconomy extends JavaPlugin {
     private DatabaseManager databaseManager;
     private CurrenciesManager currenciesManager;
 
-    private NotificationManager notificationManager;
     private VaultEconomyProvider economyProvider;
 
     @Getter
@@ -76,10 +74,6 @@ public final class PEconomy extends JavaPlugin {
         this.formatter = new Formatter(this, config, messages);
         this.formatter.reload();
 
-        // notification manager initialization
-        this.notificationManager = new NotificationManager(this, config);
-        this.notificationManager.register();
-
         // Vault economy provider initialization
         this.economyProvider = new VaultEconomyProvider(this);
         
@@ -93,7 +87,7 @@ public final class PEconomy extends JavaPlugin {
         hookInto();
         
         // PEconomy API initialization
-        apiInstance = new PEconomyAPIImpl(databaseManager, currenciesManager, economyProvider, formatter);
+        apiInstance = new SimplePEconomyAPI(databaseManager, currenciesManager, economyProvider, formatter);
         
         getLogger().info("Yep, I am ready!");
     }
@@ -117,7 +111,7 @@ public final class PEconomy extends JavaPlugin {
      * Gets initialized API instance or null if PEconomy wasn't initialized fully
      * @return PEconomy API instance (maybe null)
      */
-    public static @NotNull PEconomyAPI getAPI() {
+    public static @NotNull PEconomyAPI getApiInstance() {
         if(apiInstance == null)
             throw new IllegalStateException("PEconomy API is unavailable now, probably the plugin was not initialized correctly!");
 
@@ -125,26 +119,24 @@ public final class PEconomy extends JavaPlugin {
     }
     
     private void hookInto() {
-        try {
-            // PlaceholdersAPI hook
-            if(config.getBoolean("hooks.papi", true)) {
-                if(Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-                    new PEconomyExpansion(this, databaseManager, currenciesManager);
-                } else {
-                    getLogger().info("PlaceholdersAPI isn't installed, ignoring it...");
-                }
+        // PlaceholdersAPI hook
+        if(config.getBoolean("hooks.papi", true)) {
+            if(Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+                new PEconomyExpansion(this, databaseManager, currenciesManager);
+            } else {
+                getLogger().info("PlaceholdersAPI isn't installed, ignoring it...");
             }
-        
-            // Vault hook
-            if(config.getBoolean("hooks.vault.enabled", false)) {
-                if(Bukkit.getPluginManager().isPluginEnabled("Vault")) {
-                    this.economyProvider.registerEconomyService(config, messages, databaseManager, currenciesManager);
-                    getLogger().info("Registered as Vault economy provider!");
-                } else {
-                    getLogger().info("Vault is not installed, ignoring it...");
-                }
+        }
+
+        // Vault hook
+        if(config.getBoolean("hooks.vault.enabled", false)) {
+            if(Bukkit.getPluginManager().isPluginEnabled("Vault")) {
+                this.economyProvider.registerEconomyService(config, messages, databaseManager, currenciesManager);
+                getLogger().info("Registered as Vault economy provider!");
+            } else {
+                getLogger().info("Vault is not installed, ignoring it...");
             }
-        } catch (Exception ignored) {}
+        }
     }
     
     private void loadConfigurations() {
@@ -156,7 +148,7 @@ public final class PEconomy extends JavaPlugin {
     }
     
     private void registerCommands() {
-        new CommandPeconomy(this, messages, databaseManager, currenciesManager, notificationManager);
+        new CommandPeconomy(this, messages, databaseManager, currenciesManager);
         new CommandBalance(this, config, messages, databaseManager, currenciesManager);
         new CommandPay(this, messages, databaseManager, currenciesManager);
     }

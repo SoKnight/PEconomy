@@ -8,10 +8,10 @@ import org.jetbrains.annotations.UnmodifiableView;
 import ru.soknight.lib.configuration.AbstractConfiguration;
 import ru.soknight.lib.configuration.Configuration;
 import ru.soknight.lib.task.PluginTask;
-import ru.soknight.peconomy.PEconomy;
-import ru.soknight.peconomy.api.PEconomyAPI;
 import ru.soknight.peconomy.balancetop.BalanceTop;
 import ru.soknight.peconomy.balancetop.BalanceTopPlace;
+import ru.soknight.peconomy.PEconomyPlugin;
+import ru.soknight.peconomy.api.PEconomyAPI;
 import ru.soknight.peconomy.task.BalanceTopUpdateTask;
 
 import java.util.*;
@@ -24,7 +24,7 @@ public final class CurrenciesManager extends AbstractConfiguration {
     private final Map<String, PluginTask> updateTasks;
     private CurrencyInstance vaultCurrency;
     
-    public CurrenciesManager(PEconomy plugin, Configuration config) {
+    public CurrenciesManager(@NotNull PEconomyPlugin plugin, @NotNull Configuration config) {
         super(plugin, "currencies.yml");
 
         this.config = config;
@@ -64,6 +64,9 @@ public final class CurrenciesManager extends AbstractConfiguration {
             float limit = (float) currencyConfig.getDouble("max-amount", 0F);
             float newbie = (float) currencyConfig.getDouble("newbie-amount", 0F);
 
+            boolean visible = currencyConfig.getBoolean("visible", true);
+            boolean transferable = currencyConfig.getBoolean("transferable", true);
+
             BalanceTopSetup balanceTopSetup = parseBalanceTopSetup(currencyConfig.getConfigurationSection("balance-top"));
             BalanceTop balanceTop = null;
 
@@ -75,7 +78,7 @@ public final class CurrenciesManager extends AbstractConfiguration {
                         place -> formatPlace(balanceTopSetup, place)
                 );
 
-            CurrencyInstance currency = new CurrencyInstance(currencyId, name, symbol, limit, newbie, balanceTopSetup, balanceTop);
+            CurrencyInstance currency = new CurrencyInstance(currencyId, name, symbol, limit, newbie, visible, transferable, balanceTopSetup, balanceTop);
             currencies.put(currencyId, currency);
 
             if(balanceTop != null) {
@@ -129,7 +132,7 @@ public final class CurrenciesManager extends AbstractConfiguration {
         return currencies.containsKey(id);
     }
 
-    public String formatPlace(BalanceTopSetup setup, BalanceTopPlace place) {
+    public String formatPlace(BalanceTopSetup setup, @NotNull BalanceTopPlace place) {
         int position = place.getPosition();
         int positionIndex = place.getPositionIndex();
 

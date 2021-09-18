@@ -7,7 +7,7 @@ import ru.soknight.lib.argument.CommandArguments;
 import ru.soknight.lib.command.preset.subcommand.PermissibleSubcommand;
 import ru.soknight.lib.configuration.Messages;
 import ru.soknight.lib.tool.CollectionsTool;
-import ru.soknight.peconomy.PEconomy;
+import ru.soknight.peconomy.PEconomyPlugin;
 import ru.soknight.peconomy.configuration.CurrenciesManager;
 import ru.soknight.peconomy.configuration.CurrencyInstance;
 import ru.soknight.peconomy.database.DatabaseManager;
@@ -19,14 +19,14 @@ import java.util.stream.Collectors;
 
 public class CommandHistory extends PermissibleSubcommand {
 
-    private final PEconomy plugin;
+    private final PEconomyPlugin plugin;
     private final Messages messages;
     
     private final DatabaseManager databaseManager;
     private final CurrenciesManager currenciesManager;
     
     public CommandHistory(
-            PEconomy plugin,
+            PEconomyPlugin plugin,
             Messages messages,
             DatabaseManager databaseManager,
             CurrenciesManager currenciesManager

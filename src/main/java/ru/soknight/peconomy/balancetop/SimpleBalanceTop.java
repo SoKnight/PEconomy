@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnmodifiableView;
 import ru.soknight.lib.tool.Validate;
-import ru.soknight.peconomy.PEconomy;
+import ru.soknight.peconomy.PEconomyPlugin;
 import ru.soknight.peconomy.api.PEconomyAPI;
 import ru.soknight.peconomy.database.model.WalletModel;
 import ru.soknight.peconomy.format.ObjectFormatter;
@@ -84,7 +84,7 @@ final class SimpleBalanceTop implements BalanceTop {
 
     @Override
     public synchronized void refresh() {
-        List<BalanceTopPlace> places = PEconomy.getAPI().getBalanceTopPlacesProvider().queryPlaces(this, comparator);
+        List<BalanceTopPlace> places = PEconomyPlugin.getApiInstance().getBalanceTopPlacesProvider().queryPlaces(this, comparator);
         this.places.clear();
         this.places.addAll(places);
     }

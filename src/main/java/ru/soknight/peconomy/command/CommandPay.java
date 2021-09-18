@@ -1,17 +1,20 @@
 package ru.soknight.peconomy.command;
 
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import ru.soknight.lib.argument.CommandArguments;
 import ru.soknight.lib.command.preset.standalone.OmnipotentCommand;
 import ru.soknight.lib.configuration.Messages;
-import ru.soknight.peconomy.PEconomy;
-import ru.soknight.peconomy.configuration.CurrenciesManager;
-import ru.soknight.peconomy.configuration.CurrencyInstance;
+import ru.soknight.peconomy.PEconomyPlugin;
 import ru.soknight.peconomy.database.DatabaseManager;
 import ru.soknight.peconomy.database.model.TransactionModel;
 import ru.soknight.peconomy.database.model.WalletModel;
+import ru.soknight.peconomy.event.payment.PaymentFinishEvent;
+import ru.soknight.peconomy.event.payment.PaymentPrepareEvent;
+import ru.soknight.peconomy.configuration.CurrenciesManager;
+import ru.soknight.peconomy.configuration.CurrencyInstance;
 import ru.soknight.peconomy.format.Formatter;
 import ru.soknight.peconomy.transaction.TransactionCause;
 
@@ -27,7 +30,7 @@ public class CommandPay extends OmnipotentCommand {
     private final CurrenciesManager currenciesManager;
     
     public CommandPay(
-            PEconomy plugin,
+            PEconomyPlugin plugin,
             Messages messages,
             DatabaseManager databaseManager,
             CurrenciesManager currenciesManager
@@ -42,6 +45,7 @@ public class CommandPay extends OmnipotentCommand {
     }
     
     @Override
+    @SuppressWarnings("deprecation")
     public void executeCommand(CommandSender sender, CommandArguments args) {
         Player player = (Player) sender;
         String walletHolder = player.getName();
@@ -54,9 +58,15 @@ public class CommandPay extends OmnipotentCommand {
             messages.sendFormatted(sender, "error.arg-is-not-float", "%arg%", args.get(1));
             return;
         }
-        
-        if(!currenciesManager.isCurrency(currencyId)) {
+
+        CurrencyInstance currency = currenciesManager.getCurrency(currencyId);
+        if(currency == null) {
             messages.sendFormatted(sender, "error.unknown-currency", "%currency%", currencyId);
+            return;
+        }
+
+        if(!currency.isTransferable()) {
+            messages.getAndSend(sender, "pay.failed.untransferable");
             return;
         }
         
@@ -67,7 +77,7 @@ public class CommandPay extends OmnipotentCommand {
         
         CompletableFuture<WalletModel> receiverWalletFuture = databaseManager.getWallet(receiver);
 
-        Formatter formatter = PEconomy.getAPI().getFormatter();
+        Formatter formatter = PEconomyPlugin.getApiInstance().getFormatter();
         databaseManager.getWallet(walletHolder).thenAccept(senderWallet -> {
             if(senderWallet == null) {
                 messages.sendFormatted(sender, "error.unknown-wallet", "%player%", walletHolder);
@@ -79,8 +89,7 @@ public class CommandPay extends OmnipotentCommand {
                 messages.sendFormatted(sender, "error.unknown-wallet", "%player%", receiver);
                 return;
             }
-            
-            CurrencyInstance currency = currenciesManager.getCurrency(currencyId);
+
             String amountstr = formatter.formatAmount(amount);
             String symbol = currency.getSymbol();
             
@@ -115,15 +124,8 @@ public class CommandPay extends OmnipotentCommand {
                 );
                 return;
             }
-            
-            // updating database
-            senderWallet.takeAmount(currencyId, amount);
-            receiverWallet.addAmount(currencyId, amount);
 
-            databaseManager.saveWallet(senderWallet).join();
-            databaseManager.saveWallet(receiverWallet).join();
-            
-            // saving transactions
+            // creating transactions
             TransactionModel senderTransaction = new TransactionModel(
                     walletHolder, currencyId, preSender, postSender, receiver, TransactionCause.PAYMENT_OUTCOMING
             );
@@ -131,8 +133,28 @@ public class CommandPay extends OmnipotentCommand {
                     receiver, currencyId, preReceiver, postReceiver, walletHolder, TransactionCause.PAYMENT_INCOMING
             );
 
+            // processing prepare event
+            OfflinePlayer receiverPlayer = Bukkit.getOfflinePlayer(receiver);
+            PaymentPrepareEvent event = new PaymentPrepareEvent(player, receiverPlayer, senderWallet, receiverWallet, senderTransaction, receiverTransaction, amount);
+            event.fireAsync().join();
+
+            if(event.isCancelled())
+                return;
+
+            senderWallet.takeAmount(currencyId, amount, receiver);
+            receiverWallet.addAmount(currencyId, amount, walletHolder);
+
+            // updating database
+            databaseManager.saveWallet(senderWallet).join();
+            databaseManager.saveWallet(receiverWallet).join();
+
             databaseManager.saveTransaction(senderTransaction).join();
             databaseManager.saveTransaction(receiverTransaction).join();
+
+            new PaymentFinishEvent(player, receiverPlayer, senderWallet, receiverWallet, senderTransaction, receiverTransaction, amount).fireAsync();
+
+            if(event.isQuiet())
+                return;
             
             // sending messages to sender and wallet owner if he is online
             messages.sendFormatted(sender, "pay.success.sender",
@@ -144,13 +166,12 @@ public class CommandPay extends OmnipotentCommand {
                     "%to%", postSenderStr,
                     "%id%", senderTransaction.getId()
             );
-            
-            Player receiverPlayer = Bukkit.getPlayer(receiver);
-            if(receiverPlayer != null)
-                messages.sendFormatted(receiverPlayer, "pay.success.receiver",
+
+            if(receiverPlayer.isOnline())
+                messages.sendFormatted(receiverPlayer.getPlayer(), "pay.success.receiver",
                         "%amount%", amountstr,
                         "%currency%", symbol,
-                        "%sender%", formatter.formatOperator(walletHolder, receiverPlayer),
+                        "%sender%", formatter.formatOperator(walletHolder, receiverPlayer.getPlayer()),
                         "%from%", preReceiverStr,
                         "%operation%", messages.get("operation.increase"),
                         "%to%", postReceiverStr,

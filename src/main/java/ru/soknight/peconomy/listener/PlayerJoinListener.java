@@ -5,9 +5,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
-import ru.soknight.peconomy.configuration.CurrenciesManager;
 import ru.soknight.peconomy.database.DatabaseManager;
 import ru.soknight.peconomy.database.model.WalletModel;
+import ru.soknight.peconomy.configuration.CurrenciesManager;
+import ru.soknight.peconomy.event.wallet.WalletCreateEvent;
 
 public final class PlayerJoinListener implements Listener {
 
@@ -31,11 +32,18 @@ public final class PlayerJoinListener implements Listener {
         
         // moved to async task
         databaseManager.getWallet(name).thenAccept(wallet -> {
-            if(wallet == null)
+            boolean existing = true;
+
+            if(wallet == null) {
                 wallet = new WalletModel(name);
+                existing = false;
+            }
             
             currenciesManager.getCurrencies().forEach(wallet::loadCurrency);
             databaseManager.saveWallet(wallet).join();
+
+            if(!existing)
+                new WalletCreateEvent(wallet).fireAsync();
         });
     }
     

@@ -3,7 +3,7 @@ package ru.soknight.peconomy.api;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ru.soknight.peconomy.PEconomy;
+import ru.soknight.peconomy.PEconomyPlugin;
 import ru.soknight.peconomy.balancetop.BalanceTop;
 import ru.soknight.peconomy.balancetop.BalanceTopPlace;
 import ru.soknight.peconomy.balancetop.function.BalanceTopPlaceFinder;
@@ -19,11 +19,11 @@ import java.util.Collection;
 public interface PEconomyAPI {
 
     /**
-     * Proxy-method for the {@link PEconomy#getAPI()}
+     * Proxy-method for the {@link PEconomyPlugin#getApiInstance()}
      * @return An API instance
      */
     static @NotNull PEconomyAPI get() {
-        return PEconomy.getAPI();
+        return PEconomyPlugin.getApiInstance();
     }
 
     /**
@@ -72,13 +72,15 @@ public interface PEconomyAPI {
      * Get balance top place provider (usually just a database query executor)
      * @return The PEconomy places provider
      */
-    @NotNull BalanceTopPlacesProvider getBalanceTopPlacesProvider();
+    @NotNull
+    BalanceTopPlacesProvider getBalanceTopPlacesProvider();
 
     /**
      * Get balance top place finder (usually just a database query executor)
      * @return The PEconomy place finder
      */
-    @NotNull BalanceTopPlaceFinder getBalanceTopPlaceFinder();
+    @NotNull
+    BalanceTopPlaceFinder getBalanceTopPlaceFinder();
 
     /*****************
      *    WALLETS    *
@@ -119,7 +121,7 @@ public interface PEconomyAPI {
      * @param player - Name of target player
      * @param currency - Target currency's ID
      * @param amount - Amount of currency to add
-     * @return Player's {@link WalletModel} after transaction (may be null)
+     * @return Player's {@link WalletModel} after transaction (maybe null)
      */
     WalletModel addAmount(String player, String currency, float amount);
     
@@ -145,7 +147,7 @@ public interface PEconomyAPI {
      * @param player - Name of target player
      * @param currency - Target currency's ID
      * @param amount - New amount of this currency
-     * @return Player's {@link WalletModel} after transaction (may be null)
+     * @return Player's {@link WalletModel} after transaction (maybe null)
      */
     WalletModel setAmount(String player, String currency, float amount);
     
@@ -153,7 +155,7 @@ public interface PEconomyAPI {
      * Nullifies currency's balance in the player's wallet
      * @param player - Name of target player
      * @param currency - Target currency's ID
-     * @return Player's {@link WalletModel} after transaction (may be null)
+     * @return Player's {@link WalletModel} after transaction (maybe null)
      */
     WalletModel resetAmount(String player, String currency);
     
@@ -162,7 +164,7 @@ public interface PEconomyAPI {
      * @param player - Name of target player
      * @param currency - Target currency's ID
      * @param amount - Amount of currency to take
-     * @return Player's {@link WalletModel} after transaction (may be null)
+     * @return Player's {@link WalletModel} after transaction (maybe null)
      */
     WalletModel takeAmount(String player, String currency, float amount);
 

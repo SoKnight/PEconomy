@@ -1,15 +1,18 @@
 package ru.soknight.peconomy.command;
 
+import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
+import org.jetbrains.annotations.NotNull;
 import ru.soknight.lib.argument.CommandArguments;
 import ru.soknight.lib.command.preset.standalone.PermissibleCommand;
 import ru.soknight.lib.configuration.Configuration;
 import ru.soknight.lib.configuration.Messages;
-import ru.soknight.peconomy.PEconomy;
-import ru.soknight.peconomy.configuration.CurrenciesManager;
+import ru.soknight.peconomy.PEconomyPlugin;
 import ru.soknight.peconomy.database.DatabaseManager;
+import ru.soknight.peconomy.configuration.CurrenciesManager;
+import ru.soknight.peconomy.configuration.CurrencyInstance;
 import ru.soknight.peconomy.format.Formatter;
 
 import java.util.List;
@@ -25,7 +28,7 @@ public class CommandBalance extends PermissibleCommand {
     private final CurrenciesManager currenciesManager;
     
     public CommandBalance(
-            PEconomy plugin,
+            PEconomyPlugin plugin,
             Configuration config,
             Messages messages,
             DatabaseManager databaseManager,
@@ -69,7 +72,7 @@ public class CommandBalance extends PermissibleCommand {
         String walletHolder = target;
         boolean forOtherPlayer = other;
 
-        Formatter formatter = PEconomy.getAPI().getFormatter();
+        Formatter formatter = PEconomyPlugin.getApiInstance().getFormatter();
         databaseManager.getWallet(walletHolder).thenAcceptAsync(wallet -> {
             if(wallet == null || wallet.getWallets().isEmpty()) {
                 if(forOtherPlayer)
@@ -81,13 +84,11 @@ public class CommandBalance extends PermissibleCommand {
             
             // formatting balances string from wallets balances
             Map<String, Float> wallets = wallet.getWallets();
-            String balances = wallets.entrySet()
-                    .stream()
-                    .filter(e -> shouldShowBalance(e.getKey()))
-                    .sorted((e1, e2) -> e1.getKey().compareToIgnoreCase(e2.getKey()))
-                    .map(e -> messages.getFormatted("balance.format",
-                            "%amount%", formatter.formatAmount(e.getValue()),
-                            "%currency%", getCurrencySymbol(e.getKey())))
+            String balances = wallets.entrySet().stream()
+                    .map(Balance::new)
+                    .filter(Balance::shouldDisplay)
+                    .sorted()
+                    .map(Balance::format)
                     .collect(Collectors.joining(messages.get("balance.separator")));
             
             // balances string may be empty
@@ -122,18 +123,50 @@ public class CommandBalance extends PermissibleCommand {
                 .filter(n -> n.toLowerCase().startsWith(arg))
                 .collect(Collectors.toList());
     }
-    
-    private boolean shouldShowBalance(String currencyId) {
-        if(currenciesManager.isCurrency(currencyId))
-            return true;
-        
-        return !config.getBoolean("hide-unknown-currencies");
-    }
-    
-    private String getCurrencySymbol(String currencyId) {
-        return currenciesManager.isCurrency(currencyId)
-                ? currenciesManager.getCurrency(currencyId).getSymbol()
-                : "N/A";
+
+    @Getter
+    private final class Balance implements Comparable<Balance> {
+        private final CurrencyInstance currency;
+        private final String currencyId;
+        private final float amount;
+
+        public Balance(@NotNull String currencyId, float amount) {
+            this.currency = currenciesManager.getCurrency(currencyId);
+            this.currencyId = currencyId;
+            this.amount = amount;
+        }
+
+        private Balance(@NotNull Map.Entry<String, Float> mapEntry) {
+            this(mapEntry.getKey(), mapEntry.getValue());
+        }
+
+        @Override
+        public int compareTo(@NotNull Balance other) {
+            if(!isCurrencyExists())
+                return -1;
+
+            if(!other.isCurrencyExists())
+                return 1;
+
+            return currencyId.compareToIgnoreCase(other.currencyId);
+        }
+
+        public boolean isCurrencyExists() {
+            return currency != null;
+        }
+
+        public boolean shouldDisplay() {
+            if(currenciesManager.isCurrency(currencyId))
+                return currenciesManager.getCurrency(currencyId).isVisible();
+
+            return !config.getBoolean("hide-unknown-currencies");
+        }
+
+        public String format() {
+            String amount = PEconomyPlugin.getApiInstance().getFormatter().formatAmount(this.amount);
+            String symbol = isCurrencyExists() ? currency.getSymbol() : "N/A";
+            return messages.getFormatted("balance.format", "%amount%", amount, "%currency%", symbol);
+        }
     }
     
 }

@@ -6,11 +6,14 @@ import org.bukkit.entity.Player;
 import ru.soknight.lib.argument.CommandArguments;
 import ru.soknight.lib.command.preset.subcommand.ArgumentableSubcommand;
 import ru.soknight.lib.configuration.Messages;
-import ru.soknight.peconomy.PEconomy;
+import ru.soknight.peconomy.PEconomyPlugin;
 import ru.soknight.peconomy.configuration.CurrenciesManager;
 import ru.soknight.peconomy.configuration.CurrencyInstance;
 import ru.soknight.peconomy.database.DatabaseManager;
 import ru.soknight.peconomy.database.model.TransactionModel;
+import ru.soknight.peconomy.event.initiator.Initiator;
+import ru.soknight.peconomy.event.wallet.TransactionFinishEvent;
+import ru.soknight.peconomy.event.wallet.TransactionPrepareEvent;
 import ru.soknight.peconomy.format.Formatter;
 
 import java.util.List;
@@ -41,7 +44,7 @@ public class CommandReset extends ArgumentableSubcommand {
             return;
         }
 
-        Formatter formatter = PEconomy.getAPI().getFormatter();
+        Formatter formatter = PEconomyPlugin.getApiInstance().getFormatter();
         databaseManager.getWallet(walletHolder).thenAccept(wallet -> {
             if(wallet == null) {
                 messages.sendFormatted(sender, "error.unknown-wallet", "%player%", walletHolder);
@@ -60,8 +63,21 @@ public class CommandReset extends ArgumentableSubcommand {
             String symbol = currency.getSymbol();
 
             TransactionModel transaction = wallet.resetWallet(currencyId, isPlayer(sender) ? sender.getName() : null);
+
+            Initiator initiator = Initiator.createAsCommandSender(sender);
+            TransactionPrepareEvent event = new TransactionPrepareEvent(wallet, initiator, transaction);
+            event.fireAsync().join();
+
+            if(event.isCancelled())
+                return;
+
             databaseManager.saveWallet(wallet).join();
             databaseManager.saveTransaction(transaction).join();
+
+            new TransactionFinishEvent(wallet, initiator, transaction).fireAsync();
+
+            if(event.isQuiet())
+                return;
 
             String prestr = formatter.formatAmount(pre);
             String operation = messages.get("operation.decrease");

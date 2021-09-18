@@ -6,12 +6,12 @@ import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnmodifiableView;
-import ru.soknight.peconomy.api.BankingProvider;
-import ru.soknight.peconomy.api.PEconomyAPI;
 import ru.soknight.peconomy.balancetop.BalanceTop;
 import ru.soknight.peconomy.balancetop.BalanceTopPlace;
 import ru.soknight.peconomy.balancetop.function.BalanceTopPlaceFinder;
 import ru.soknight.peconomy.balancetop.function.BalanceTopPlacesProvider;
+import ru.soknight.peconomy.api.BankingProvider;
+import ru.soknight.peconomy.api.PEconomyAPI;
 import ru.soknight.peconomy.configuration.CurrenciesManager;
 import ru.soknight.peconomy.configuration.CurrencyInstance;
 import ru.soknight.peconomy.database.DatabaseManager;
@@ -26,12 +26,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
-final class PEconomyAPIImpl implements PEconomyAPI {
+final class SimplePEconomyAPI implements PEconomyAPI {
 
     private final DatabaseManager databaseManager;
     private final CurrenciesManager currenciesManager;
     private final VaultEconomyProvider economyProvider;
-    private final Formatter formatter;
+    private final ru.soknight.peconomy.format.Formatter formatter;
 
     @Override
     public @NotNull Formatter getFormatter() {
@@ -199,7 +199,7 @@ final class PEconomyAPIImpl implements PEconomyAPI {
 
     @Override
     public @NotNull @UnmodifiableView Collection<CurrencyInstance> getLoadedCurrencies() {
-        return Collections.unmodifiableCollection(currenciesManager.getCurrencies());
+        return currenciesManager.getCurrencies();
     }
 
     @Override

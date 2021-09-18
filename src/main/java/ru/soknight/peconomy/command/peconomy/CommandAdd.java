@@ -6,14 +6,15 @@ import org.bukkit.entity.Player;
 import ru.soknight.lib.argument.CommandArguments;
 import ru.soknight.lib.command.preset.subcommand.ArgumentableSubcommand;
 import ru.soknight.lib.configuration.Messages;
-import ru.soknight.peconomy.PEconomy;
+import ru.soknight.peconomy.PEconomyPlugin;
 import ru.soknight.peconomy.configuration.CurrenciesManager;
 import ru.soknight.peconomy.configuration.CurrencyInstance;
 import ru.soknight.peconomy.database.DatabaseManager;
 import ru.soknight.peconomy.database.model.TransactionModel;
+import ru.soknight.peconomy.event.initiator.Initiator;
+import ru.soknight.peconomy.event.wallet.TransactionFinishEvent;
+import ru.soknight.peconomy.event.wallet.TransactionPrepareEvent;
 import ru.soknight.peconomy.format.Formatter;
-import ru.soknight.peconomy.notification.NotificationManager;
-import ru.soknight.peconomy.notification.NotificationType;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,20 +24,17 @@ public class CommandAdd extends ArgumentableSubcommand {
     private final Messages messages;
     private final DatabaseManager databaseManager;
     private final CurrenciesManager currenciesManager;
-    private final NotificationManager notificationManager;
 
     public CommandAdd(
             Messages messages,
             DatabaseManager databaseManager,
-            CurrenciesManager currenciesManager,
-            NotificationManager notificationManager
+            CurrenciesManager currenciesManager
     ) {
         super(null, "peco.command.add", 3, messages);
         
         this.messages = messages;
         this.databaseManager = databaseManager;
         this.currenciesManager = currenciesManager;
-        this.notificationManager = notificationManager;
     }
 
     @Override
@@ -55,7 +53,7 @@ public class CommandAdd extends ArgumentableSubcommand {
             return;
         }
 
-        Formatter formatter = PEconomy.getAPI().getFormatter();
+        Formatter formatter = PEconomyPlugin.getApiInstance().getFormatter();
         databaseManager.getWallet(walletHolder).thenAccept(wallet -> {
             if(wallet == null) {
                 messages.sendFormatted(sender, "error.unknown-wallet", "%player%", walletHolder);
@@ -79,8 +77,21 @@ public class CommandAdd extends ArgumentableSubcommand {
             }
 
             TransactionModel transaction = wallet.addAmount(currencyId, amount, isPlayer(sender) ? sender.getName() : null);
+
+            Initiator initiator = Initiator.createAsCommandSender(sender);
+            TransactionPrepareEvent event = new TransactionPrepareEvent(wallet, initiator, transaction);
+            event.fireAsync().join();
+
+            if(event.isCancelled())
+                return;
+
             databaseManager.saveWallet(wallet).join();
             databaseManager.saveTransaction(transaction).join();
+
+            new TransactionFinishEvent(wallet, initiator, transaction).fireAsync();
+
+            if(event.isQuiet())
+                return;
             
             String operator = isPlayer(sender) ? sender.getName() : messages.get("console-operator");
             String amountstr = formatter.formatAmount(amount);
@@ -100,9 +111,7 @@ public class CommandAdd extends ArgumentableSubcommand {
             );
             
             Player player = Bukkit.getPlayer(walletHolder);
-            if(player == null)
-                notificationManager.notify(transaction, NotificationType.STAFF_ADD);
-            else
+            if(player != null)
                 messages.sendFormatted(player, "add.success.holder",
                         "%amount%", amountstr,
                         "%currency%", symbol,

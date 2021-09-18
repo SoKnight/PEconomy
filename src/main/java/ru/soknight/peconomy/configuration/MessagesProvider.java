@@ -1,9 +1,10 @@
 package ru.soknight.peconomy.configuration;
 
 import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
 import ru.soknight.lib.configuration.Configuration;
 import ru.soknight.lib.configuration.Messages;
-import ru.soknight.peconomy.PEconomy;
+import ru.soknight.peconomy.PEconomyPlugin;
 
 import java.io.InputStream;
 import java.util.Arrays;
@@ -14,10 +15,10 @@ public final class MessagesProvider {
 
     private static final List<String> LOCALES = Arrays.asList("en", "ru");
     
-    private final PEconomy plugin;
+    private final PEconomyPlugin plugin;
     private Messages messages;
     
-    public MessagesProvider(PEconomy plugin, Configuration config) {
+    public MessagesProvider(@NotNull PEconomyPlugin plugin, @NotNull Configuration config) {
         this.plugin = plugin;
         
         String locale = config.getString("messages.locale", "en").toLowerCase();
@@ -37,7 +38,7 @@ public final class MessagesProvider {
         this.messages = new Messages(plugin, source, filename);
     }
 
-    public void update(Configuration config) {
+    public void update(@NotNull Configuration config) {
         String locale = config.getString("messages.locale", "en").toLowerCase();
         
         if(!LOCALES.contains(locale)) {
