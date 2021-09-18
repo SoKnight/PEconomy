@@ -1,5 +1,5 @@
 name: PEconomy
-main: ru.soknight.peconomy.PEconomyPlugin
+main: ru.soknight.peconomy.PEconomy
 author: SoKnight
 version: ${project.version}
 depend: [SKLibrary]

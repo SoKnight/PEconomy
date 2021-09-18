@@ -25,7 +25,7 @@ import ru.soknight.peconomy.listener.PlayerJoinListener;
 
 import java.sql.SQLException;
 
-public final class PEconomyPlugin extends JavaPlugin {
+public final class PEconomy extends JavaPlugin {
 
     private static PEconomyAPI apiInstance;
     
@@ -111,7 +111,7 @@ public final class PEconomyPlugin extends JavaPlugin {
      * Gets initialized API instance or null if PEconomy wasn't initialized fully
      * @return PEconomy API instance (maybe null)
      */
-    public static @NotNull PEconomyAPI getApiInstance() {
+    public static @NotNull PEconomyAPI getAPI() {
         if(apiInstance == null)
             throw new IllegalStateException("PEconomy API is unavailable now, probably the plugin was not initialized correctly!");
 

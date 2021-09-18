@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 import ru.soknight.lib.argument.CommandArguments;
 import ru.soknight.lib.command.preset.standalone.OmnipotentCommand;
 import ru.soknight.lib.configuration.Messages;
-import ru.soknight.peconomy.PEconomyPlugin;
+import ru.soknight.peconomy.PEconomy;
 import ru.soknight.peconomy.database.DatabaseManager;
 import ru.soknight.peconomy.database.model.TransactionModel;
 import ru.soknight.peconomy.database.model.WalletModel;
@@ -30,7 +30,7 @@ public class CommandPay extends OmnipotentCommand {
     private final CurrenciesManager currenciesManager;
     
     public CommandPay(
-            PEconomyPlugin plugin,
+            PEconomy plugin,
             Messages messages,
             DatabaseManager databaseManager,
             CurrenciesManager currenciesManager
@@ -77,7 +77,7 @@ public class CommandPay extends OmnipotentCommand {
         
         CompletableFuture<WalletModel> receiverWalletFuture = databaseManager.getWallet(receiver);
 
-        Formatter formatter = PEconomyPlugin.getApiInstance().getFormatter();
+        Formatter formatter = PEconomy.getAPI().getFormatter();
         databaseManager.getWallet(walletHolder).thenAccept(senderWallet -> {
             if(senderWallet == null) {
                 messages.sendFormatted(sender, "error.unknown-wallet", "%player%", walletHolder);

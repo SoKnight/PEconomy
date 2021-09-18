@@ -10,7 +10,7 @@ import ru.soknight.lib.configuration.Configuration;
 import ru.soknight.lib.task.PluginTask;
 import ru.soknight.peconomy.balancetop.BalanceTop;
 import ru.soknight.peconomy.balancetop.BalanceTopPlace;
-import ru.soknight.peconomy.PEconomyPlugin;
+import ru.soknight.peconomy.PEconomy;
 import ru.soknight.peconomy.api.PEconomyAPI;
 import ru.soknight.peconomy.task.BalanceTopUpdateTask;
 
@@ -24,7 +24,7 @@ public final class CurrenciesManager extends AbstractConfiguration {
     private final Map<String, PluginTask> updateTasks;
     private CurrencyInstance vaultCurrency;
     
-    public CurrenciesManager(@NotNull PEconomyPlugin plugin, @NotNull Configuration config) {
+    public CurrenciesManager(@NotNull PEconomy plugin, @NotNull Configuration config) {
         super(plugin, "currencies.yml");
 
         this.config = config;

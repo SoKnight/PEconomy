@@ -6,7 +6,7 @@ import com.j256.ormlite.support.ConnectionSource;
 import org.jetbrains.annotations.NotNull;
 import ru.soknight.lib.database.Database;
 import ru.soknight.lib.executable.quiet.AbstractQuietExecutor;
-import ru.soknight.peconomy.PEconomyPlugin;
+import ru.soknight.peconomy.PEconomy;
 import ru.soknight.peconomy.database.model.TransactionModel;
 import ru.soknight.peconomy.database.model.WalletModel;
 import ru.soknight.peconomy.event.wallet.WalletCreateEvent;
@@ -23,7 +23,7 @@ public final class DatabaseManager extends AbstractQuietExecutor {
     private final Dao<WalletModel, String> walletsDao;
     private final Dao<TransactionModel, Integer> transactionsDao;
     
-    public DatabaseManager(@NotNull PEconomyPlugin plugin, @NotNull Database database) throws SQLException {
+    public DatabaseManager(@NotNull PEconomy plugin, @NotNull Database database) throws SQLException {
         this.connection = database.establishConnection();
         
         this.walletsDao = DaoManager.createDao(connection, WalletModel.class);

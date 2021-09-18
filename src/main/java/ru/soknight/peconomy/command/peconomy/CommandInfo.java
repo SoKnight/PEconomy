@@ -4,7 +4,7 @@ import org.bukkit.command.CommandSender;
 import ru.soknight.lib.argument.CommandArguments;
 import ru.soknight.lib.command.preset.subcommand.ArgumentableSubcommand;
 import ru.soknight.lib.configuration.Messages;
-import ru.soknight.peconomy.PEconomyPlugin;
+import ru.soknight.peconomy.PEconomy;
 import ru.soknight.peconomy.configuration.CurrenciesManager;
 import ru.soknight.peconomy.configuration.CurrencyInstance;
 import ru.soknight.peconomy.database.DatabaseManager;
@@ -12,14 +12,14 @@ import ru.soknight.peconomy.format.Formatter;
 
 public class CommandInfo extends ArgumentableSubcommand {
 
-    private final PEconomyPlugin plugin;
+    private final PEconomy plugin;
     private final Messages messages;
     
     private final DatabaseManager databaseManager;
     private final CurrenciesManager currenciesManager;
     
     public CommandInfo(
-            PEconomyPlugin plugin,
+            PEconomy plugin,
             Messages messages,
             DatabaseManager databaseManager,
             CurrenciesManager currenciesManager

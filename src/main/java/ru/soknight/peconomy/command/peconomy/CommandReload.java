@@ -5,14 +5,14 @@ import org.bukkit.command.CommandSender;
 import ru.soknight.lib.argument.CommandArguments;
 import ru.soknight.lib.command.preset.subcommand.PermissibleSubcommand;
 import ru.soknight.lib.configuration.Messages;
-import ru.soknight.peconomy.PEconomyPlugin;
+import ru.soknight.peconomy.PEconomy;
 
 public class CommandReload extends PermissibleSubcommand {
 
-    private final PEconomyPlugin plugin;
+    private final PEconomy plugin;
     private final Messages messages;
     
-    public CommandReload(PEconomyPlugin plugin, Messages messages) {
+    public CommandReload(PEconomy plugin, Messages messages) {
         super("peco.command.reload", messages);
         
         this.plugin = plugin;

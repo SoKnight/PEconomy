@@ -3,7 +3,7 @@ package ru.soknight.peconomy.api;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ru.soknight.peconomy.PEconomyPlugin;
+import ru.soknight.peconomy.PEconomy;
 import ru.soknight.peconomy.balancetop.BalanceTop;
 import ru.soknight.peconomy.balancetop.BalanceTopPlace;
 import ru.soknight.peconomy.balancetop.function.BalanceTopPlaceFinder;
@@ -19,11 +19,11 @@ import java.util.Collection;
 public interface PEconomyAPI {
 
     /**
-     * Proxy-method for the {@link PEconomyPlugin#getApiInstance()}
+     * Proxy-method for the {@link PEconomy#getAPI()}
      * @return An API instance
      */
     static @NotNull PEconomyAPI get() {
-        return PEconomyPlugin.getApiInstance();
+        return PEconomy.getAPI();
     }
 
     /**

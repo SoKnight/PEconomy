@@ -9,7 +9,7 @@ import ru.soknight.lib.argument.CommandArguments;
 import ru.soknight.lib.command.preset.standalone.PermissibleCommand;
 import ru.soknight.lib.configuration.Configuration;
 import ru.soknight.lib.configuration.Messages;
-import ru.soknight.peconomy.PEconomyPlugin;
+import ru.soknight.peconomy.PEconomy;
 import ru.soknight.peconomy.database.DatabaseManager;
 import ru.soknight.peconomy.configuration.CurrenciesManager;
 import ru.soknight.peconomy.configuration.CurrencyInstance;
@@ -28,7 +28,7 @@ public class CommandBalance extends PermissibleCommand {
     private final CurrenciesManager currenciesManager;
     
     public CommandBalance(
-            PEconomyPlugin plugin,
+            PEconomy plugin,
             Configuration config,
             Messages messages,
             DatabaseManager databaseManager,
@@ -72,7 +72,7 @@ public class CommandBalance extends PermissibleCommand {
         String walletHolder = target;
         boolean forOtherPlayer = other;
 
-        Formatter formatter = PEconomyPlugin.getApiInstance().getFormatter();
+        Formatter formatter = PEconomy.getAPI().getFormatter();
         databaseManager.getWallet(walletHolder).thenAcceptAsync(wallet -> {
             if(wallet == null || wallet.getWallets().isEmpty()) {
                 if(forOtherPlayer)
@@ -163,7 +163,7 @@ public class CommandBalance extends PermissibleCommand {
         }
 
         public String format() {
-            String amount = PEconomyPlugin.getApiInstance().getFormatter().formatAmount(this.amount);
+            String amount = PEconomy.getAPI().getFormatter().formatAmount(this.amount);
             String symbol = isCurrencyExists() ? currency.getSymbol() : "N/A";
             return messages.getFormatted("balance.format", "%amount%", amount, "%currency%", symbol);
         }
