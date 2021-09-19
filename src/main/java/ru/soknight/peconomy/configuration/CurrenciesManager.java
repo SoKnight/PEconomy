@@ -8,10 +8,11 @@ import org.jetbrains.annotations.UnmodifiableView;
 import ru.soknight.lib.configuration.AbstractConfiguration;
 import ru.soknight.lib.configuration.Configuration;
 import ru.soknight.lib.task.PluginTask;
-import ru.soknight.peconomy.balancetop.BalanceTop;
-import ru.soknight.peconomy.balancetop.BalanceTopPlace;
 import ru.soknight.peconomy.PEconomy;
 import ru.soknight.peconomy.api.PEconomyAPI;
+import ru.soknight.peconomy.balancetop.BalanceTop;
+import ru.soknight.peconomy.balancetop.BalanceTopPlace;
+import ru.soknight.peconomy.convertation.ConvertationSetup;
 import ru.soknight.peconomy.task.BalanceTopUpdateTask;
 
 import java.util.*;
@@ -28,8 +29,8 @@ public final class CurrenciesManager extends AbstractConfiguration {
         super(plugin, "currencies.yml");
 
         this.config = config;
-        this.currencies = new HashMap<>();
-        this.updateTasks = new HashMap<>();
+        this.currencies = new LinkedHashMap<>();
+        this.updateTasks = new LinkedHashMap<>();
         
         refreshCurrencies();
     }
@@ -58,19 +59,11 @@ public final class CurrenciesManager extends AbstractConfiguration {
                 return;
             }
 
-            String name = colorize(currencyConfig.getString("name", currencyId));
-            String symbol = colorize(currencyConfig.getString("symbol"));
-            
-            float limit = (float) currencyConfig.getDouble("max-amount", 0F);
-            float newbie = (float) currencyConfig.getDouble("newbie-amount", 0F);
-
-            boolean visible = currencyConfig.getBoolean("visible", true);
-            boolean transferable = currencyConfig.getBoolean("transferable", true);
-
+            ConvertationSetup convertationSetup = new ConvertationSetup(currencyId);
             BalanceTopSetup balanceTopSetup = parseBalanceTopSetup(currencyConfig.getConfigurationSection("balance-top"));
             BalanceTop balanceTop = null;
 
-            if(balanceTopSetup != null && balanceTopSetup.isValid())
+            if (balanceTopSetup != null && balanceTopSetup.isValid())
                 balanceTop = BalanceTop.create(
                         getPlugin(),
                         currencyId,
@@ -78,14 +71,32 @@ public final class CurrenciesManager extends AbstractConfiguration {
                         place -> formatPlace(balanceTopSetup, place)
                 );
 
-            CurrencyInstance currency = new CurrencyInstance(currencyId, name, symbol, limit, newbie, visible, transferable, balanceTopSetup, balanceTop);
+            CurrencyInstance currency = CurrencyInstance.builder(currencyId)
+                    .setName(colorize(currencyConfig.getString("name", currencyId)))
+                    .setSymbol(colorize(currencyConfig.getString("symbol")))
+                    .setLimit(Math.max((float) currencyConfig.getDouble("max-amount", 0F), 0F))
+                    .setNewbieAmount(Math.max((float) currencyConfig.getDouble("newbie-amount", 0F), 0F))
+                    .setVisible(currencyConfig.getBoolean("visible", true))
+                    .setTransferable(currencyConfig.getBoolean("transferable", true))
+                    .setConvertationSetup(convertationSetup)
+                    .setBalanceTopSetup(balanceTopSetup)
+                    .setBalanceTop(balanceTop)
+                    .create();
+
             currencies.put(currencyId, currency);
 
-            if(balanceTop != null) {
+            if (balanceTop != null) {
                 PluginTask updateTask = new BalanceTopUpdateTask(getPlugin(), currency, balanceTop);
                 updateTask.start();
                 updateTasks.put(currencyId, updateTask);
             }
+        });
+
+        currencies.forEach((currencyId, currency) -> {
+            ConfigurationSection currencyConfig = currenciesConfig.getConfigurationSection(currencyId);
+            ConfigurationSection convertationConfig = currencyConfig.getConfigurationSection("convertation");
+            if (convertationConfig != null)
+                currency.getConvertationSetup().load(this, convertationConfig);
         });
         
         if (config.getBoolean("hooks.vault.enabled")) {

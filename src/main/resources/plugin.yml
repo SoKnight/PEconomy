@@ -82,6 +82,18 @@ permissions:
     description: Allows to take an amount from player's currency wallet
     default: op
 
+  # /peco convert <amount> <from> <to>
+  peco.command.convert:
+    description: Allows to convert funds from first currency to second currency
+    default: true
+
+  # /peco convert <amount> <from> <to> [player]
+  peco.command.convert.other:
+    description: Allows to convert funds from first currency to second currency on other player's wallet
+    default: op
+    children:
+      peco.command.convert: true
+
   # /balance
   peco.command.balance:
     description: Allows to see own balances

@@ -39,7 +39,7 @@ operation:
 # Balance add
 add:
   failed:
-    limit-reached: "&cThis transaction can reach the limit — %limit%%currency%."
+    limit-reached: "&cThis transaction has reached the limit — %limit%%currency%."
   success:
     operator: "&fAdded &b%amount%%currency% &fto &b%player%'s &fbalance: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)"
     holder: '&6| &fYou received &b%amount%%currency% &fto your balance: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)'
@@ -68,6 +68,31 @@ take:
   success:
     operator: "&fTaken &b%amount%%currency% &ffrom &b%player%'s &fbalance: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)"
     holder: '&6| &fTaken &b%amount%%currency% &ffrom your balance: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)'
+
+# Currency convertation
+convert:
+  failed:
+    empty-wallet: "&c%player%' wallet is empty."
+    same-named-currency: "&cOh.. It's useless, isn't it?"
+    unconvertable: '&cCurrency %currency_first_name% (%currency_first%) cannot be converted to %currency_second_name% (%currency_second%).'
+    not-enough: 
+      other: "&cThere are only %amount%%currency% on %player%'s balance that is less than requested %requested%%currency%."
+      self: "&cYou have only %amount%%currency% that is less than requested %requested%%currency%."
+    limit-reached: "&cThis operation has reached the limit — %limit%%currency%."
+  success:
+    operator: 
+      other: |
+        &fAmount &b%amount_first%%currency_first% &fhas been converted to &b%amount_second%%currency_second% &fon &b%player%'s &fwallet: 
+        &7Wallet &a%currency_first_name%&7: &b%amount_first_from%%currency_first% &c» &b%amount_first_to%%currency_first% &7(#%id_first%)
+        &7Wallet &a%currency_second_name%&7: &b%amount_second_from%%currency_second% &a» &b%amount_second_to%%currency_second% &7(#%id_second%)
+      self: |
+        &fAmount &b%amount_first%%currency_first% &fhas been converted to &b%amount_second%%currency_second% &fon your wallet: 
+        &7Wallet &a%currency_first_name%&7: &b%amount_first_from%%currency_first% &c» &b%amount_first_to%%currency_first% &7(#%id_first%)
+        &7Wallet &a%currency_second_name%&7: &b%amount_second_from%%currency_second% &a» &b%amount_second_to%%currency_second% &7(#%id_second%)
+    holder: |
+      &6| &fAmount &b%amount_first%%currency_first% &fhas been converted to &b%amount_second%%currency_second% &fon your wallet: 
+      &6| &7Wallet &a%currency_first_name%&7: &b%amount_first_from%%currency_first% &c» &b%amount_first_to%%currency_first% &7(#%id_first%)
+      &6| &7Wallet &a%currency_second_name%&7: &b%amount_second_from%%currency_second% &a» &b%amount_second_to%%currency_second% &7(#%id_second%)
 
 # Balance info
 balance:
@@ -120,7 +145,7 @@ info:
     &7   Information about transaction
     &f Unique ID: &b#%id%
     &f Wallet holder: &b%owner%
-    &f Action: &b%action%
+    &f Type: &b%action%
     &f Pre-transaction balance: &b%pre%%symbol%
     &f Post-transaction balance: &b%post%%symbol%
     &f Wallet currency: &b%currency% (%symbol%)
@@ -138,6 +163,7 @@ action:
   payment: 
     incoming: "Payment from %source%"
     outcoming: "Payment to %source%"
+  convertation: "Currency convertation"
   failed: "&cFailed"
 
 # Source value for console-by transaction
@@ -154,15 +180,16 @@ help:
   footer: " "
   # Descriptions for commands
   descriptions:
-    help: 'Display this help page'
-    balance: 'View balance of all wallets'
+    balance: 'View wallet balance'
     pay: 'Transfer money to other player'
+    help: 'Display this help page'
     add: 'Add amount to balance'
     set: 'Change balance value'
     reset: 'Nullify the balance'
     take: 'Take amount from balance'
-    history: 'View transactions history'
     info: 'Display transaction info'
+    history: 'View transactions history'
+    convert: 'Convert to other currency'
     reload: 'Reload configurations'
   # Placeholders for commands
   # Will be used after subcommands if it is needed
@@ -170,6 +197,8 @@ help:
     player-req: '<player>'
     player-opt: '[player]'
     currency: '<currency>'
+    currency-first: '<from>'
+    currency-second: '<to>'
     amount: '<amount>'
     page: '[page]'
     id: '<id>'

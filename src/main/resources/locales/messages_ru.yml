@@ -39,7 +39,7 @@ operation:
 # Добавление средств на баланс
 add:
   failed:
-    limit-reached: "&cДанная транзакция может превысить лимит — %limit%%currency%."
+    limit-reached: "&cДанная транзакция превышает лимит — %limit%%currency%."
   success:
     operator: "&fДобавлено &b%amount%%currency% &fна счёт &b%player%&f: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)"
     holder: '&6| &fВаш счёт пополнен на &b%amount%%currency%&f: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)'
@@ -68,6 +68,31 @@ take:
   success:
     operator: "&fСнято &b%amount%%currency% &fсо счёта &b%player%&f: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)"
     holder: '&6| &fС вашего счёта снято &b%amount%%currency%&f: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)'
+
+# Конвертация валют
+convert:
+  failed:
+    empty-wallet: '&cКошелёк %player% пуст.'
+    same-named-currency: "&cЭто бесполезно, разве нет?"
+    unconvertable: '&cВалюта %currency_first_name% (%currency_first%) не может быть переведена в %currency_second_name% (%currency_second%).'
+    not-enough: 
+      other: "&cНа счёте %player% только %amount%%currency%, что меньше запрошенных %requested%%currency%."
+      self: "&cНа вашем счёте только %amount%%currency%, что меньше запрошенных %requested%%currency%."
+    limit-reached: "&cДанная операция превышает лимит — %limit%%currency%."
+  success:
+    operator: 
+      other: |
+        &fСумма &b%amount_first%%currency_first% &fна счёте &b%player% &fбыла переведена в &b%amount_second%%currency_second%&f: 
+        &7Счёт валюты &a%currency_first_name%&7: &b%amount_first_from%%currency_first% &c» &b%amount_first_to%%currency_first% &7(#%id_first%)
+        &7Счёт валюты &a%currency_second_name%&7: &b%amount_second_from%%currency_second% &a» &b%amount_second_to%%currency_second% &7(#%id_second%)
+      self: |
+        &fСумма &b%amount_first%%currency_first% &fна вашем счёте была переведена в &b%amount_second%%currency_second%&f: 
+        &7Счёт валюты &a%currency_first_name%&7: &b%amount_first_from%%currency_first% &c» &b%amount_first_to%%currency_first% &7(#%id_first%)
+        &7Счёт валюты &a%currency_second_name%&7: &b%amount_second_from%%currency_second% &a» &b%amount_second_to%%currency_second% &7(#%id_second%)
+    holder: |
+      &6| &fСумма &b%amount_first%%currency_first% &fна вашем счёте была переведена в &b%amount_second%%currency_second%&f: 
+      &6| &7Счёт валюты &a%currency_first_name%&7: &b%amount_first_from%%currency_first% &c» &b%amount_first_to%%currency_first% &7(#%id_first%)
+      &6| &7Счёт валюты &a%currency_second_name%&7: &b%amount_second_from%%currency_second% &a» &b%amount_second_to%%currency_second% &7(#%id_second%)
 
 # Информация о балансе
 balance:
@@ -120,7 +145,7 @@ info:
     &7   Информация о транзакции
     &f Идентификатор: &b#%id%
     &f Держатель счёта: &b%owner%
-    &f Действие: &b%action%
+    &f Тип: &b%action%
     &f Баланс до операции: &b%pre%%symbol%
     &f Баланс после операции: &b%post%%symbol%
     &f Оперируемая валюта: &b%currency% (%symbol%)
@@ -137,6 +162,7 @@ action:
   payment: 
     incoming: "Перевод от %source%"
     outcoming: "Перевод игроку %source%"
+  convertation: "Конвертация валюты"
   failed: "&cПровалена"
 
 # Значение источника (см. action) для отправителя консоли
@@ -153,15 +179,16 @@ help:
   footer: " "
   # Описания команд
   descriptions:
-    help: 'Показать эту страницу'
-    balance: 'Показать баланс всех кошельков'
+    balance: 'Показать баланс кошелька'
     pay: 'Перевести деньги игроку'
+    help: 'Показать эту страницу'
     add: 'Добавить сумму на валютный счёт'
     set: 'Изменить валютный счёт'
     reset: 'Аннулировать валютный счёт'
     take: 'Снять сумму с валютного счёта'
-    history: 'Показать историю транзакций'
     info: 'Показать информацию о транзакции'
+    history: 'Показать историю транзакций'
+    convert: 'Перевести в другую валюту'
     reload: 'Перезагрузить конфигурацию'
   # Аргументы для команд
   # Будут использованы после команды, если это необходимо
@@ -169,6 +196,8 @@ help:
     player-req: '<игрок>'
     player-opt: '[игрок]'
     currency: '<валюта>'
+    currency-first: '<из какой>'
+    currency-second: '<в какую>'
     amount: '<сумма>'
     page: '[стр.]'
     id: '<ID>'

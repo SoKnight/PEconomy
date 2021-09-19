@@ -15,13 +15,7 @@ public class CommandHelp extends EnhancedHelpExecutor {
         super.factory()
                 .helpLineFormatFrom("help.body")
                 .permissionFormat("peco.command.%s")
-        
-                // /peco help
-                .newLine()
-                        .command("peco help")
-                        .descriptionFrom("help")
-                        .permission("help")
-                        .add()
+
                 // /balance [player]
                 .newLine()
                         .command("balance", true)
@@ -31,6 +25,12 @@ public class CommandHelp extends EnhancedHelpExecutor {
                 .newLine()
                         .command("pay", true)
                         .argumentsFrom("player-req", "amount", "currency")
+                        .add()
+                // /peco help
+                .newLine()
+                        .command("peco help")
+                        .descriptionFrom("help")
+                        .permission("help")
                         .add()
                 // /peco add <player> <amount> <currency>
                 .newLine()
@@ -73,6 +73,13 @@ public class CommandHelp extends EnhancedHelpExecutor {
                         .argumentsFrom("player-opt", "page")
                         .descriptionFrom("history")
                         .permission("history")
+                        .add()
+                // /peco convert <amount> <from> <to> [player]
+                .newLine()
+                        .command("peco convert")
+                        .argumentsFrom("amount", "currency-first", "currency-second", "player-opt")
+                        .descriptionFrom("convert")
+                        .permission("convert")
                         .add()
                 // /peco reload
                 .newLine()

@@ -11,6 +11,7 @@ public enum TransactionCause {
     STAFF_TAKE("take"),
     PAYMENT_OUTCOMING,
     PAYMENT_INCOMING,
+    CONVERTATION,
     FAILED,
     UNKNOWN;
 

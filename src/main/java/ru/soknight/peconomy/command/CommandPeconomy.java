@@ -18,12 +18,13 @@ public class CommandPeconomy extends ModifiedDispatcher {
         super("peconomy", messages);
         
         super.setExecutor("help", new CommandHelp(messages));
-        super.setExecutor("info", new CommandInfo(plugin, messages, databaseManager, currenciesManager));
-        super.setExecutor("history", new CommandHistory(plugin, messages, databaseManager, currenciesManager));
         super.setExecutor("add", new CommandAdd(messages, databaseManager, currenciesManager));
         super.setExecutor("set", new CommandSet(messages, databaseManager, currenciesManager));
         super.setExecutor("reset", new CommandReset(messages, databaseManager, currenciesManager));
         super.setExecutor("take", new CommandTake(messages, databaseManager, currenciesManager));
+        super.setExecutor("info", new CommandInfo(plugin, messages, databaseManager, currenciesManager));
+        super.setExecutor("history", new CommandHistory(plugin, messages, databaseManager, currenciesManager));
+        super.setExecutor("convert", new CommandConvert(messages, databaseManager, currenciesManager));
         super.setExecutor("reload", new CommandReload(plugin, messages));
 
         super.register(plugin, true);
