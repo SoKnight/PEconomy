@@ -43,7 +43,6 @@ public class CommandHistory extends PermissibleSubcommand {
     @Override
     public void executeCommand(CommandSender sender, CommandArguments args) {
         String target = sender.getName();
-        boolean other;
         int page = 1;
         
         if(args.isEmpty()) {
@@ -63,12 +62,15 @@ public class CommandHistory extends PermissibleSubcommand {
             page = args.getAsInteger(1);
         }
 
-        other = true;
-        if(isPlayer(sender) && !target.equals(sender.getName())) {
-            if(!sender.hasPermission("peco.command.history.other")) {
-                target = sender.getName();
-                other = false;
+        boolean other = !isPlayer(sender) || !target.equals(sender.getName());
+        if(other && !sender.hasPermission("peco.command.history.other")) {
+            if(!isPlayer(sender)) {
+                messages.getAndSend(sender, "error.wrong-syntax");
+                return;
             }
+
+            target = sender.getName();
+            other = false;
         }
         
         if(page < 1)
@@ -96,17 +98,14 @@ public class CommandHistory extends PermissibleSubcommand {
             if(transactions.size() % size != 0) total++;
             
             String path = "history.header." + (finalOther ? "other" : "self");
-            String header = messages.getFormatted(path,
-                    "%player%", finalTarget,
-                    "%page%", finalPage,
-                    "%total%", total
-            );
+            String header = messages.getFormatted(path, "%player%", finalTarget, "%page%", finalPage, "%total%", total);
+            String footer = messages.getFormatted("history.footer", "%player%", finalTarget, "%page%", finalPage, "%total%", total);
             
             String body = onpage.stream()
                     .map(t -> formatTransaction(sender, t))
                     .collect(Collectors.joining("\n"));
             
-            String message = header + "\n" + body + "\n" + messages.get("history.footer");
+            String message = header + "\n" + body + "\n" + footer;
             sender.sendMessage(message);
         });
     }
