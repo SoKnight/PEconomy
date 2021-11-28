@@ -23,11 +23,7 @@ public final class PEconomyExpansion extends PlaceholderExpansion {
         this.plugin = plugin;
         this.databaseManager = databaseManager;
         this.currenciesManager = currenciesManager;
-
-        if(isRegistered())
-            unregister();
-        
-        register();
+        registerIfNotRegisteredYet(true);
     }
     
     @Override
@@ -53,6 +49,18 @@ public final class PEconomyExpansion extends PlaceholderExpansion {
     @Override
     public String onRequest(OfflinePlayer player, @NotNull String query) {
         return String.valueOf(handlePlaceholderRequest(player, query));
+    }
+
+    public void registerIfNotRegisteredYet(boolean unregister) {
+        if(isRegistered()) {
+            if(unregister) {
+                unregister();
+            } else {
+                return;
+            }
+        }
+
+        register();
     }
 
     private Object handlePlaceholderRequest(OfflinePlayer player, String query) {

@@ -2,7 +2,11 @@ package ru.soknight.peconomy;
 
 import com.j256.ormlite.field.DataPersisterManager;
 import lombok.Getter;
+import me.clip.placeholderapi.events.ExpansionsLoadedEvent;
 import org.bukkit.Bukkit;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import ru.soknight.lib.configuration.Configuration;
@@ -25,7 +29,7 @@ import ru.soknight.peconomy.listener.PlayerJoinListener;
 
 import java.sql.SQLException;
 
-public final class PEconomy extends JavaPlugin {
+public final class PEconomy extends JavaPlugin implements Listener {
 
     private static PEconomyAPI apiInstance;
     
@@ -36,6 +40,7 @@ public final class PEconomy extends JavaPlugin {
     private DatabaseManager databaseManager;
     private CurrenciesManager currenciesManager;
 
+    private PEconomyExpansion peconomyExpansion;
     private VaultEconomyProvider economyProvider;
 
     @Getter
@@ -117,12 +122,17 @@ public final class PEconomy extends JavaPlugin {
 
         return apiInstance;
     }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onExpansionsLoad(@NotNull ExpansionsLoadedEvent event) {
+        peconomyExpansion.registerIfNotRegisteredYet(false);
+    }
     
     private void hookInto() {
         // PlaceholdersAPI hook
         if(config.getBoolean("hooks.papi", true)) {
             if(Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-                new PEconomyExpansion(this, databaseManager, currenciesManager);
+                this.peconomyExpansion = new PEconomyExpansion(this, databaseManager, currenciesManager);
             } else {
                 getLogger().info("PlaceholdersAPI isn't installed, ignoring it...");
             }
@@ -154,6 +164,9 @@ public final class PEconomy extends JavaPlugin {
     }
     
     private void registerListeners() {
+        // --- internal events listener
+        getServer().getPluginManager().registerEvents(this, this);
+
         // --- bukkit events listeners
         new PlayerJoinListener(this, databaseManager, currenciesManager);
     }
