@@ -4,7 +4,7 @@ Want to read more? See the project [WiKi](https://github.com/SoKnight/PEconomy/w
 
 ## Compatibility
 - Supported game versions: **1.12.X** - **1.18.X**
-- Required server software: Spigot or another fork (Paper etc.)
+- Required server software: **Spigot** or another fork (**Paper** etc.)
 
 ## Dependencies
 - [*SKLibrary](https://github.com/SoKnight/SKLibrary) v1.14.X or newer
