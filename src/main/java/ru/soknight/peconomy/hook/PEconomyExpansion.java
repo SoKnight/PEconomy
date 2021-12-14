@@ -136,7 +136,7 @@ public final class PEconomyExpansion extends PlaceholderExpansion {
             if(currency == null || !currency.useBalanceTop())
                 return "";
 
-            WalletModel wallet = databaseManager.getOrCreateWallet(player.getName()).join();
+            WalletModel wallet = databaseManager.getOrCreateWallet(player).join();
             if(wallet == null)
                 return "";
 

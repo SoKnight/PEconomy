@@ -47,7 +47,7 @@ public final class CurrenciesManager extends AbstractConfiguration {
         this.currencies.clear();
         this.updateTasks.clear();
         
-        ConfigurationSection currenciesConfig = getFileConfig().getConfigurationSection("currencies");
+        ConfigurationSection currenciesConfig = getBukkitConfig().getConfigurationSection("currencies");
         Set<String> keys = currenciesConfig.getKeys(false);
         if (keys.isEmpty())
             return;
@@ -100,7 +100,7 @@ public final class CurrenciesManager extends AbstractConfiguration {
         });
         
         if (config.getBoolean("hooks.vault.enabled")) {
-            String vault = getFileConfig().getString("vault.currency");
+            String vault = getConfig().getString("vault.currency");
             if (vault == null) {
                 getPlugin().getLogger().info("Vault default currency is not specified, ignoring it.");
             } else if (!currencies.containsKey(vault)) {

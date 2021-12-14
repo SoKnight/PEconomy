@@ -2,16 +2,14 @@ package ru.soknight.peconomy;
 
 import com.j256.ormlite.field.DataPersisterManager;
 import lombok.Getter;
-import me.clip.placeholderapi.events.ExpansionsLoadedEvent;
 import org.bukkit.Bukkit;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import ru.soknight.lib.configuration.Configuration;
 import ru.soknight.lib.configuration.Messages;
 import ru.soknight.lib.database.Database;
+import ru.soknight.lib.database.migration.annotation.ActualSchemaVersion;
+import ru.soknight.lib.database.migration.runtime.DataConverters;
 import ru.soknight.peconomy.api.PEconomyAPI;
 import ru.soknight.peconomy.command.CommandBalance;
 import ru.soknight.peconomy.command.CommandPay;
@@ -21,15 +19,20 @@ import ru.soknight.peconomy.configuration.MessagesProvider;
 import ru.soknight.peconomy.database.DatabaseManager;
 import ru.soknight.peconomy.database.model.TransactionModel;
 import ru.soknight.peconomy.database.model.WalletModel;
+import ru.soknight.peconomy.database.model.deprecated.TransactionModelV1;
+import ru.soknight.peconomy.database.model.deprecated.WalletModelV1;
 import ru.soknight.peconomy.database.persister.LocalDateTimePersister;
 import ru.soknight.peconomy.format.Formatter;
 import ru.soknight.peconomy.hook.PEconomyExpansion;
 import ru.soknight.peconomy.hook.VaultEconomyProvider;
+import ru.soknight.peconomy.listener.PapiExpansionsLoadListener;
 import ru.soknight.peconomy.listener.PlayerJoinListener;
 
 import java.sql.SQLException;
 
-public final class PEconomy extends JavaPlugin implements Listener {
+@SuppressWarnings("deprecation")
+@ActualSchemaVersion(2)
+public final class PEconomy extends JavaPlugin {
 
     private static PEconomyAPI apiInstance;
     
@@ -40,22 +43,24 @@ public final class PEconomy extends JavaPlugin implements Listener {
     private DatabaseManager databaseManager;
     private CurrenciesManager currenciesManager;
 
-    private PEconomyExpansion peconomyExpansion;
     private VaultEconomyProvider economyProvider;
 
     @Getter
     private Formatter formatter;
-    
+
     @Override
     public void onEnable() {
         // configurations initialization
         loadConfigurations();
-        
+
         // database initialization
         try {
             DataPersisterManager.registerDataPersisters(LocalDateTimePersister.getSingleton());
 
             Database database = new Database(this, config)
+                    .registerDataConverter(DataConverters.wrap(WalletModelV1.getConverter()))
+                    .registerDataConverter(DataConverters.wrap(TransactionModelV1.getConverter()))
+                    .performMigrations()
                     .createTable(WalletModel.class)
                     .createTable(TransactionModel.class)
                     .complete();
@@ -81,20 +86,20 @@ public final class PEconomy extends JavaPlugin implements Listener {
 
         // Vault economy provider initialization
         this.economyProvider = new VaultEconomyProvider(this);
-        
+
         // commands executors initialization
         registerCommands();
-        
+
         // event listeners initialization
         registerListeners();
-        
+
         // hooking into some plugins
         hookInto();
-        
+
         // PEconomy API initialization
         apiInstance = new SimplePEconomyAPI(databaseManager, currenciesManager, economyProvider, formatter);
-        
-        getLogger().info("Yep, I am ready!");
+
+        getLogger().info("Let's go! (づ｡◕‿‿◕｡)づ");
     }
     
     @Override
@@ -122,19 +127,13 @@ public final class PEconomy extends JavaPlugin implements Listener {
 
         return apiInstance;
     }
-
-    @EventHandler(priority = EventPriority.LOWEST)
-    public void onExpansionsLoad(@NotNull ExpansionsLoadedEvent event) {
-        peconomyExpansion.registerIfNotRegisteredYet(false);
-    }
     
     private void hookInto() {
-        // PlaceholdersAPI hook
+        // PlaceholderAPI hook
         if(config.getBoolean("hooks.papi", true)) {
             if(Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-                this.peconomyExpansion = new PEconomyExpansion(this, databaseManager, currenciesManager);
-            } else {
-                getLogger().info("PlaceholdersAPI isn't installed, ignoring it...");
+                PEconomyExpansion expansion = new PEconomyExpansion(this, databaseManager, currenciesManager);
+                new PapiExpansionsLoadListener(this, expansion);
             }
         }
 
@@ -143,8 +142,6 @@ public final class PEconomy extends JavaPlugin implements Listener {
             if(Bukkit.getPluginManager().isPluginEnabled("Vault")) {
                 this.economyProvider.registerEconomyService(config, messages, databaseManager, currenciesManager);
                 getLogger().info("Registered as Vault economy provider!");
-            } else {
-                getLogger().info("Vault is not installed, ignoring it...");
             }
         }
     }
@@ -164,9 +161,6 @@ public final class PEconomy extends JavaPlugin implements Listener {
     }
     
     private void registerListeners() {
-        // --- internal events listener
-        getServer().getPluginManager().registerEvents(this, this);
-
         // --- bukkit events listeners
         new PlayerJoinListener(this, databaseManager, currenciesManager);
     }

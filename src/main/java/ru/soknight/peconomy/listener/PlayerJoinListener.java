@@ -1,6 +1,8 @@
 package ru.soknight.peconomy.listener;
 
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.Plugin;
@@ -26,16 +28,16 @@ public final class PlayerJoinListener implements Listener {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerJoin(@NotNull PlayerJoinEvent event) {
-        String name = event.getPlayer().getName();
+        Player player = event.getPlayer();
         
         // moved to async task
-        databaseManager.getWallet(name).thenAccept(wallet -> {
+        databaseManager.getWallet(player.getName()).thenAccept(wallet -> {
             boolean existing = true;
 
             if(wallet == null) {
-                wallet = new WalletModel(name);
+                wallet = new WalletModel(player);
                 existing = false;
             }
             

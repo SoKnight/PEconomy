@@ -27,15 +27,14 @@ public final class MessagesProvider {
             locale = "en";
         }
         
-        String filename = "messages_" + locale + ".yml";
-        InputStream source = plugin.getClass().getResourceAsStream("/locales/" + filename);
-        
-        if(source == null) {
+        String localeFileName = "messages_" + locale + ".yml";
+        InputStream localeResource = plugin.getClass().getResourceAsStream("/locales/" + localeFileName);
+        if(localeResource == null) {
             plugin.getLogger().severe("Couldn't find an internal localization resource.");
             return;
         }
-        
-        this.messages = new Messages(plugin, source, filename);
+
+        this.messages = new Messages(plugin, localeFileName, localeResource);
     }
 
     public void update(@NotNull Configuration config) {
@@ -53,9 +52,10 @@ public final class MessagesProvider {
             plugin.getLogger().severe("Couldn't find an internal localization resource.");
             return;
         }
-        
-        messages.setSource(source);
-        messages.setFilename(filename);
+
+        // TODO messages providing refactoring
+//        messages.setSource(source);
+//        messages.setFilename(filename);
         messages.refresh();
     }
     

@@ -1,0 +1,11 @@
+[Migration]
+name = Transactions table schema patch
+description = Fixes any transactions table column names
+version = 2
+order = 2
+target = all
+source = transactions
+destination = transactions
+
+[Statements]
+DROP TABLE `transactions`;

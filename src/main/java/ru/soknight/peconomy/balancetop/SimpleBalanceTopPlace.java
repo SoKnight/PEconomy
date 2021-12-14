@@ -36,7 +36,7 @@ public final class SimpleBalanceTopPlace implements BalanceTopPlace {
         if(isEmpty())
             throw new IllegalStateException("this balance top place is empty!");
 
-        return wallet.getWalletHolder();
+        return wallet.getPlayerName();
     }
 
     @Override

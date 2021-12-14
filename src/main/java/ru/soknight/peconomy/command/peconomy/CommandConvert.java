@@ -86,7 +86,7 @@ public final class CommandConvert extends ArgumentableSubcommand {
 
         CompletableFuture<WalletModel> walletFuture = other
                 ? databaseManager.getWallet(walletHolder)
-                : databaseManager.getOrCreateWallet(walletHolder);
+                : databaseManager.getOrCreateWallet((Player) sender);
 
         Formatter formatter = PEconomyAPI.get().getFormatter();
         walletFuture.thenAccept(wallet -> {

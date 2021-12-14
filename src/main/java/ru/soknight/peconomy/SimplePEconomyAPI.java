@@ -31,7 +31,7 @@ final class SimplePEconomyAPI implements PEconomyAPI {
     private final DatabaseManager databaseManager;
     private final CurrenciesManager currenciesManager;
     private final VaultEconomyProvider economyProvider;
-    private final ru.soknight.peconomy.format.Formatter formatter;
+    private final Formatter formatter;
 
     @Override
     public @NotNull Formatter getFormatter() {

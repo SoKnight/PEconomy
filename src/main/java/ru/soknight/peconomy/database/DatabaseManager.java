@@ -3,6 +3,7 @@ package ru.soknight.peconomy.database;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.support.ConnectionSource;
+import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
 import ru.soknight.lib.database.Database;
 import ru.soknight.lib.executable.quiet.AbstractQuietExecutor;
@@ -14,6 +15,7 @@ import ru.soknight.peconomy.event.wallet.WalletCreateEvent;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public final class DatabaseManager extends AbstractQuietExecutor {
@@ -40,63 +42,69 @@ public final class DatabaseManager extends AbstractQuietExecutor {
         } catch (IOException ignored) {}
     }
     
-    /*****************
-     *    WALLETS    *
-     ****************/
-
-    private @NotNull WalletModel createWallet(String player) {
-        WalletModel wallet = new WalletModel(player);
+    // --- wallets
+    private @NotNull WalletModel createWallet(@NotNull String playerName, @NotNull UUID playerUUID) {
+        WalletModel wallet = new WalletModel(playerName, playerUUID);
         saveWallet(wallet).join();
 
         new WalletCreateEvent(wallet).fireAsync();
         return wallet;
     }
 
-    public CompletableFuture<WalletModel> getOrCreateWallet(String player) {
-        return getWallet(player).thenApply(wallet -> wallet != null ? wallet : createWallet(player));
+    public @NotNull CompletableFuture<WalletModel> getOrCreateWallet(@NotNull OfflinePlayer bukkitPlayer) {
+        return getOrCreateWallet(bukkitPlayer.getName(), bukkitPlayer.getUniqueId());
     }
 
-    public CompletableFuture<List<WalletModel>> getAllWallets() {
+    public @NotNull CompletableFuture<WalletModel> getOrCreateWallet(@NotNull String playerName, @NotNull UUID playerUUID) {
+        return getWallet(playerName).thenApply(wallet -> wallet != null ? wallet : createWallet(playerName, playerUUID));
+    }
+
+    public @NotNull CompletableFuture<List<WalletModel>> getAllWallets() {
         return supplyQuietlyAsync(walletsDao::queryForAll);
     }
     
-    public CompletableFuture<WalletModel> getWallet(String player) {
-        return supplyQuietlyAsync(() -> walletsDao.queryForId(player));
+    public @NotNull CompletableFuture<WalletModel> getWallet(@NotNull String playerName) {
+        return supplyQuietlyAsync(() -> walletsDao.queryForId(playerName));
+    }
+
+    public @NotNull CompletableFuture<WalletModel> getWallet(@NotNull UUID playerUUID) {
+        return supplyQuietlyAsync(() -> walletsDao.queryBuilder()
+                .where()
+                .eq(WalletModel.COLUMN_PLAYER_UUID, playerUUID)
+                .queryForFirst()
+        );
     }
     
-    public CompletableFuture<Long> getWalletsCount() {
+    public @NotNull CompletableFuture<Long> getWalletsCount() {
         return supplyQuietlyAsync(() -> walletsDao.queryBuilder().countOf());
     }
     
-    public CompletableFuture<Boolean> hasWallet(String player) {
-        return supplyQuietlyAsync(() -> walletsDao.idExists(player));
+    public @NotNull CompletableFuture<Boolean> hasWallet(@NotNull String playerName) {
+        return supplyQuietlyAsync(() -> walletsDao.idExists(playerName));
+    }
+
+    public @NotNull CompletableFuture<Void> transferWallet(@NotNull WalletModel wallet, @NotNull String playerName) {
+        return runQuietlyAsync(() -> walletsDao.updateId(wallet, playerName));
     }
     
-    public CompletableFuture<Void> saveWallet(WalletModel wallet) {
+    public @NotNull CompletableFuture<Void> saveWallet(@NotNull WalletModel wallet) {
         return runQuietlyAsync(() -> walletsDao.createOrUpdate(wallet));
     }
     
-    public CompletableFuture<Void> transferWallet(WalletModel wallet, String player) {
-        return runQuietlyAsync(() -> walletsDao.updateId(wallet, player));
-    }
-    
-    /**********************
-     *    TRANSACTIONS    *
-     *********************/
-    
-    public CompletableFuture<TransactionModel> getTransactionByID(int id) {
+    // --- transactions
+    public @NotNull CompletableFuture<TransactionModel> getTransactionByID(int id) {
         return supplyQuietlyAsync(() -> transactionsDao.queryForId(id));
     }
     
-    public CompletableFuture<List<TransactionModel>> getTransactionHistory(String owner) {
+    public @NotNull CompletableFuture<List<TransactionModel>> getTransactionHistory(@NotNull String walletHolder) {
         return supplyQuietlyAsync(() -> transactionsDao.queryBuilder()
                 .where()
-                .eq("owner", owner)
+                .eq(TransactionModel.COLUMN_WALLET_HOLDER, walletHolder)
                 .query()
         );
     }
     
-    public CompletableFuture<Void> saveTransaction(TransactionModel transaction) {
+    public @NotNull CompletableFuture<Void> saveTransaction(@NotNull TransactionModel transaction) {
         return runQuietlyAsync(() -> transactionsDao.createOrUpdate(transaction));
     }
     

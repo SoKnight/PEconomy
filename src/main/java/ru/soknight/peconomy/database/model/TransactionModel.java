@@ -16,24 +16,44 @@ import java.util.Objects;
 @NoArgsConstructor
 @AllArgsConstructor
 @DatabaseTable(tableName = "transactions")
-public class TransactionModel {
+public final class TransactionModel {
 
-    @DatabaseField(columnName = "id", generatedId = true)
+    public static final String COLUMN_ID = "id";
+    public static final String COLUMN_WALLET_HOLDER = "wallet_holder";
+    public static final String COLUMN_OPERATOR = "operator";
+    public static final String COLUMN_CURRENCY = "currency";
+    public static final String COLUMN_CAUSE = "cause";
+    public static final String COLUMN_BALANCE_BEFORE = "balance_before";
+    public static final String COLUMN_BALANCE_AFTER = "balance_after";
+    public static final String COLUMN_PASSED_AT = "passed_at";
+
+    @DatabaseField(columnName = COLUMN_ID, generatedId = true, canBeNull = false)
     private int id;
-    @DatabaseField(columnName = "owner", canBeNull = false)
+    @DatabaseField(columnName = COLUMN_WALLET_HOLDER, canBeNull = false)
     private String walletHolder;
-    @DatabaseField(columnName = "source")
+    @DatabaseField(columnName = COLUMN_OPERATOR)
     private String operator;
-    @DatabaseField(columnName = "currency", canBeNull = false)
+    @DatabaseField(columnName = COLUMN_CURRENCY, canBeNull = false)
     private String currency;
-    @DatabaseField(columnName = "type", canBeNull = false)
+    @DatabaseField(columnName = COLUMN_CAUSE, canBeNull = false)
     private String cause;
-    @DatabaseField(columnName = "preBalance", canBeNull = false)
+    @DatabaseField(columnName = COLUMN_BALANCE_BEFORE, canBeNull = false)
     private float balanceBefore;
-    @DatabaseField(columnName = "postBalance", canBeNull = false)
+    @DatabaseField(columnName = COLUMN_BALANCE_AFTER, canBeNull = false)
     private float balanceAfter;
-    @DatabaseField(columnName = "date", canBeNull = false)
+    @DatabaseField(columnName = COLUMN_PASSED_AT, canBeNull = false)
     private LocalDateTime passedAt;
+
+    public TransactionModel(
+            @NotNull String walletHolder,
+            @NotNull String currency,
+            float balanceBefore,
+            float balanceAfter,
+            @Nullable String operator,
+            @NotNull TransactionCause cause
+    ) {
+        this(walletHolder, currency, balanceBefore, balanceAfter, operator, cause.getId());
+    }
 
     public TransactionModel(
             @NotNull String walletHolder,
@@ -52,17 +72,6 @@ public class TransactionModel {
         this.passedAt = LocalDateTime.now();
     }
 
-    public TransactionModel(
-            @NotNull String walletHolder,
-            @NotNull String currency,
-            float balanceBefore,
-            float balanceAfter,
-            @Nullable String operator,
-            @NotNull TransactionCause cause
-    ) {
-        this(walletHolder, currency, balanceBefore, balanceAfter, operator, cause.getId());
-    }
-
     public boolean isSuccess() {
         return !cause.equalsIgnoreCase("failed");
     }
@@ -73,8 +82,8 @@ public class TransactionModel {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if(this == o) return true;
+        if(o == null || getClass() != o.getClass()) return false;
 
         TransactionModel that = (TransactionModel) o;
         return id == that.id &&
@@ -93,8 +102,8 @@ public class TransactionModel {
     }
 
     @Override
-    public String toString() {
-        return "Transaction{" +
+    public @NotNull String toString() {
+        return "TransactionModel{" +
                 "id=" + id +
                 ", holder='" + walletHolder + '\'' +
                 ", subject='" + operator + '\'' +
