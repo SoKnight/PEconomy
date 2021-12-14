@@ -1,6 +1,6 @@
 # PEconomy
 Minecraft economy plugin with unlimited currencies support and more other features.<br>
-Want to read more? See the project [WiKi](https://github.com/SoKnight/PEconomy/wiki)!
+Want to read more? See the project [WiKi](https://github.com/SoKnight/PEconomy/wiki)
 
 ## Compatibility
 - Supported game versions: **1.12.X** - **1.18.X**
