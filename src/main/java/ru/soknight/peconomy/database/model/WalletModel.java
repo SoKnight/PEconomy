@@ -65,6 +65,11 @@ public final class WalletModel {
             addAmount(currency.getId(), currency.getNewbieAmount());
     }
 
+    public void updateUUID(@NotNull UUID uuid) {
+        Validate.notNull(uuid, "uuid");
+        this.playerUUID = uuid;
+    }
+
     public void addAmount(@NotNull String currency, float amount) {
         synchronized (this) {
             float pre = getAmount(currency);

@@ -10,7 +10,6 @@ import ru.soknight.peconomy.event.BukkitEvent;
 @AllArgsConstructor
 public abstract class WalletEvent extends BukkitEvent {
 
-    protected final @NotNull
-    WalletModel wallet;
+    protected final @NotNull WalletModel wallet;
 
 }

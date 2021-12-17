@@ -5,6 +5,7 @@ import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.support.ConnectionSource;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
+import ru.soknight.lib.configuration.Configuration;
 import ru.soknight.lib.database.Database;
 import ru.soknight.lib.executable.quiet.AbstractQuietExecutor;
 import ru.soknight.peconomy.PEconomy;
@@ -20,12 +21,14 @@ import java.util.concurrent.CompletableFuture;
 
 public final class DatabaseManager extends AbstractQuietExecutor {
 
+    private final Configuration config;
     private final ConnectionSource connection;
     
     private final Dao<WalletModel, String> walletsDao;
     private final Dao<TransactionModel, Integer> transactionsDao;
     
-    public DatabaseManager(@NotNull PEconomy plugin, @NotNull Database database) throws SQLException {
+    public DatabaseManager(@NotNull PEconomy plugin, @NotNull Configuration config, @NotNull Database database) throws SQLException {
+        this.config = config;
         this.connection = database.establishConnection();
         
         this.walletsDao = DaoManager.createDao(connection, WalletModel.class);
@@ -43,6 +46,10 @@ public final class DatabaseManager extends AbstractQuietExecutor {
     }
     
     // --- wallets
+    private @NotNull WalletModel createWallet(@NotNull OfflinePlayer bukkitPlayer) {
+        return createWallet(bukkitPlayer.getName(), bukkitPlayer.getUniqueId());
+    }
+
     private @NotNull WalletModel createWallet(@NotNull String playerName, @NotNull UUID playerUUID) {
         WalletModel wallet = new WalletModel(playerName, playerUUID);
         saveWallet(wallet).join();
@@ -52,7 +59,7 @@ public final class DatabaseManager extends AbstractQuietExecutor {
     }
 
     public @NotNull CompletableFuture<WalletModel> getOrCreateWallet(@NotNull OfflinePlayer bukkitPlayer) {
-        return getOrCreateWallet(bukkitPlayer.getName(), bukkitPlayer.getUniqueId());
+        return getWalletUsingActualIdentifier(bukkitPlayer).thenApply(wallet -> wallet != null ? wallet : createWallet(bukkitPlayer));
     }
 
     public @NotNull CompletableFuture<WalletModel> getOrCreateWallet(@NotNull String playerName, @NotNull UUID playerUUID) {
@@ -61,6 +68,15 @@ public final class DatabaseManager extends AbstractQuietExecutor {
 
     public @NotNull CompletableFuture<List<WalletModel>> getAllWallets() {
         return supplyQuietlyAsync(walletsDao::queryForAll);
+    }
+
+    public @NotNull CompletableFuture<WalletModel> getWalletUsingActualIdentifier(@NotNull OfflinePlayer bukkitPlayer) {
+        boolean identifyingByUuid = config.getBoolean("holding-status-updater.identify-by-uuid", false);
+        if(identifyingByUuid)
+            return getWallet(bukkitPlayer.getUniqueId())
+                    .thenApply(wallet -> wallet != null ? wallet : getWallet(bukkitPlayer.getName()).join());
+
+        return getWallet(bukkitPlayer.getName());
     }
     
     public @NotNull CompletableFuture<WalletModel> getWallet(@NotNull String playerName) {

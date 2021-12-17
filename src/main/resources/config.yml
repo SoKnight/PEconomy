@@ -76,7 +76,7 @@ hooks:
     # Should to save transactions for operations provided by Vault?
     transactions: true
     
-  # Should plugin add own placeholders into PlaceholdersAPI?
+  # Should plugin add own placeholders into PlaceholderAPI?
   papi: true
 
 # Should plugin send tab-completions with all wallets owners from database or not
@@ -92,6 +92,18 @@ hide-unknown-currencies: false
 # Wallet balances and just amounts format
 # Default value is '%.2f' where '2' is amount of digits after the floating point
 amount-format: '%.2f'
+
+# The wallet holding status updating feature
+# Example: You want to link wallets to UUIDs not nicknames
+#          You can configure that here
+holding-status-updater:
+  # Should update status on player joining?
+  update-on-join: true
+
+  # Should use player's UUID as identify key instead of nicknames?
+  # In this case player that has joined with other nickname will own his wallet from previous nickname
+  # Sure, the wallet owner's nickname will be updated to new
+  identify-by-uuid: false
 
 # Configuration of transactions history feature
 transactions-history:

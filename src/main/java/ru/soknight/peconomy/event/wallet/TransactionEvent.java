@@ -10,10 +10,8 @@ import ru.soknight.peconomy.transaction.TransactionCause;
 @Getter
 public abstract class TransactionEvent extends WalletEvent {
 
-    protected final @NotNull
-    Initiator initiator;
-    protected final @NotNull
-    TransactionModel transaction;
+    protected final @NotNull Initiator initiator;
+    protected final @NotNull TransactionModel transaction;
 
     public TransactionEvent(
             @NotNull WalletModel wallet,

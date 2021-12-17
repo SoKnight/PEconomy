@@ -6,7 +6,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import ru.soknight.lib.configuration.Configuration;
+import ru.soknight.lib.configuration.LocalizableMessages;
 import ru.soknight.lib.configuration.Messages;
+import ru.soknight.lib.configuration.locale.examiner.LocaleTagExaminer;
+import ru.soknight.lib.configuration.locale.resolver.LocaleTagResolver;
 import ru.soknight.lib.database.Database;
 import ru.soknight.lib.database.migration.annotation.ActualSchemaVersion;
 import ru.soknight.lib.database.migration.runtime.DataConverters;
@@ -15,7 +18,6 @@ import ru.soknight.peconomy.command.CommandBalance;
 import ru.soknight.peconomy.command.CommandPay;
 import ru.soknight.peconomy.command.CommandPeconomy;
 import ru.soknight.peconomy.configuration.CurrenciesManager;
-import ru.soknight.peconomy.configuration.MessagesProvider;
 import ru.soknight.peconomy.database.DatabaseManager;
 import ru.soknight.peconomy.database.model.TransactionModel;
 import ru.soknight.peconomy.database.model.WalletModel;
@@ -29,15 +31,18 @@ import ru.soknight.peconomy.listener.PapiExpansionsLoadListener;
 import ru.soknight.peconomy.listener.PlayerJoinListener;
 
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
 
 @SuppressWarnings("deprecation")
 @ActualSchemaVersion(2)
 public final class PEconomy extends JavaPlugin {
 
+    private static final List<String> SUPPORTED_LOCALE_TAGS = Arrays.asList("en", "ru");
+
     private static PEconomyAPI apiInstance;
     
     private Configuration config;
-    private MessagesProvider messagesProvider;
     private Messages messages;
     
     private DatabaseManager databaseManager;
@@ -65,7 +70,7 @@ public final class PEconomy extends JavaPlugin {
                     .createTable(TransactionModel.class)
                     .complete();
 
-            this.databaseManager = new DatabaseManager(this, database);
+            this.databaseManager = new DatabaseManager(this, config, database);
         } catch (SQLException ex) {
             getLogger().severe("Database connection cannot be established: " + ex.getMessage());
             getServer().getPluginManager().disablePlugin(this);
@@ -149,9 +154,15 @@ public final class PEconomy extends JavaPlugin {
     private void loadConfigurations() {
         this.config = new Configuration(this, "config.yml");
         this.config.refresh();
-        
-        this.messagesProvider = new MessagesProvider(this, config);
-        this.messages = messagesProvider.getMessages();
+
+        this.messages = new LocalizableMessages(this)
+                .withDefaultLocaleTag("en")
+                .withLocaleResourcePathFormat("locales/messages_{tag}.yml")
+                .withLocaleOutputFilePathFormat("messages_{tag}.yml")
+                .withCurrentLocaleResolver(LocaleTagResolver.fromConfig(config, "messages.locale"))
+                .withCurrentLocaleExaminer(LocaleTagExaminer.fromList(false, SUPPORTED_LOCALE_TAGS));
+
+        this.messages.refresh();
     }
     
     private void registerCommands() {
@@ -162,18 +173,21 @@ public final class PEconomy extends JavaPlugin {
     
     private void registerListeners() {
         // --- bukkit events listeners
-        new PlayerJoinListener(this, databaseManager, currenciesManager);
+        new PlayerJoinListener(this, config, databaseManager, currenciesManager);
     }
 
     public void reload() {
         config.refresh();
-        messagesProvider.update(config);
+        messages.refresh();
 
         // currencies reloading
         currenciesManager.refreshCurrencies();
 
         // formatter updating
         formatter.reload();
+
+        // command registration
+        registerCommands();
     }
     
 }
