@@ -5,7 +5,7 @@ version = 2
 order = 1
 target = all
 source = walletowners
-destination = wallet_owners
+destination = peco_wallet_owners
 
 [Statements]
 DROP TABLE `walletowners`;

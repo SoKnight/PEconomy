@@ -13,6 +13,7 @@ import ru.soknight.lib.configuration.locale.resolver.LocaleTagResolver;
 import ru.soknight.lib.database.Database;
 import ru.soknight.lib.database.migration.annotation.ActualSchemaVersion;
 import ru.soknight.lib.database.migration.runtime.DataConverters;
+import ru.soknight.lib.database.migration.schema.DatabaseSchemaAnalyzer;
 import ru.soknight.peconomy.api.PEconomyAPI;
 import ru.soknight.peconomy.command.CommandBalance;
 import ru.soknight.peconomy.command.CommandPay;
@@ -65,10 +66,10 @@ public final class PEconomy extends JavaPlugin {
             Database database = new Database(this, config)
                     .registerDataConverter(DataConverters.wrap(WalletModelV1.getConverter()))
                     .registerDataConverter(DataConverters.wrap(TransactionModelV1.getConverter()))
-                    .performMigrations()
-                    .createTable(WalletModel.class)
-                    .createTable(TransactionModel.class)
-                    .complete();
+                    .registerSchemaAnalyzer(1, DatabaseSchemaAnalyzer.checkTableStructures(WalletModelV1.class, TransactionModelV1.class))
+                    .registerSchemaAnalyzer(2, DatabaseSchemaAnalyzer.checkTableStructures(WalletModel.class, TransactionModel.class))
+                    .registerTables(WalletModel.class, TransactionModel.class)
+                    .complete(true);
 
             this.databaseManager = new DatabaseManager(this, config, database);
         } catch (SQLException ex) {

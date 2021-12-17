@@ -17,7 +17,7 @@ import java.util.*;
 
 @Getter
 @NoArgsConstructor
-@DatabaseTable(tableName = "wallet_owners")
+@DatabaseTable(tableName = "peco_wallet_owners")
 public final class WalletModel {
 
     public static final String COLUMN_PLAYER_NAME = "player_name";

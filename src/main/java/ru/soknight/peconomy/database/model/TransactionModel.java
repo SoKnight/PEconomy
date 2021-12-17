@@ -15,7 +15,7 @@ import java.util.Objects;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@DatabaseTable(tableName = "transactions")
+@DatabaseTable(tableName = "peco_transactions")
 public final class TransactionModel {
 
     public static final String COLUMN_ID = "id";
