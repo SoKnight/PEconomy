@@ -16,11 +16,8 @@ import ru.soknight.peconomy.event.wallet.WalletCreateEvent;
 import ru.soknight.peconomy.event.wallet.holding.HoldingUpdateByUsernameEvent;
 import ru.soknight.peconomy.event.wallet.holding.HoldingUpdateByUuidEvent;
 
-import java.util.logging.Logger;
-
 public final class PlayerJoinListener implements Listener {
 
-    private final Logger logger;
     private final Configuration config;
     private final DatabaseManager databaseManager;
     private final CurrenciesManager currenciesManager;
@@ -31,7 +28,6 @@ public final class PlayerJoinListener implements Listener {
             @NotNull DatabaseManager databaseManager,
             @NotNull CurrenciesManager currenciesManager
     ) {
-        this.logger = plugin.getLogger();
         this.config = config;
         this.databaseManager = databaseManager;
         this.currenciesManager = currenciesManager;
@@ -49,7 +45,6 @@ public final class PlayerJoinListener implements Listener {
     }
 
     private void validateWalletExistAndHoldingStatus(@NotNull Player player, @Nullable WalletModel wallet) {
-        logger.info("Existing wallet: " + wallet);
         boolean existing = true;
 
         if(wallet == null) {
@@ -64,7 +59,6 @@ public final class PlayerJoinListener implements Listener {
             if(shouldUpdateUsername(player, wallet)) {
                 HoldingUpdateByUsernameEvent event = new HoldingUpdateByUsernameEvent(wallet, wallet.getPlayerName(), player.getName());
                 event.fireAsync();
-                logger.info("Event: " + event);
 
                 if(!event.isCancelled() && event.isSomethingChanged()) {
                     databaseManager.transferWallet(wallet, event.getCurrent()).join();
@@ -74,7 +68,6 @@ public final class PlayerJoinListener implements Listener {
             if(shouldUpdateUUID(player, wallet)) {
                 HoldingUpdateByUuidEvent event = new HoldingUpdateByUuidEvent(wallet, wallet.getPlayerUUID().orElse(null), player.getUniqueId());
                 event.fireAsync();
-                logger.info("Event: " + event);
 
                 if(!event.isCancelled() && event.isSomethingChanged()) {
                     wallet.updateUUID(player.getUniqueId());
@@ -83,7 +76,6 @@ public final class PlayerJoinListener implements Listener {
         }
 
         databaseManager.saveWallet(wallet).join();
-        logger.info("Saved wallet: " + wallet);
 
         if(!existing)
             new WalletCreateEvent(wallet).fireAsync();
