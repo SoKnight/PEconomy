@@ -13,22 +13,18 @@
     <properties>
         <!-- Building -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <java.version>8</java.version>
 
-        <!-- General dependencies -->
+        <!-- Dependencies -->
         <spigot.api.version>1.13.2-R0.1-SNAPSHOT</spigot.api.version>
-        <bungeecord.api.version>1.17-R0.1-SNAPSHOT</bungeecord.api.version>
         <sklibrary.version>1.15.0</sklibrary.version>
-        <lombok.version>1.18.22</lombok.version>
-
-        <!-- Additional dependencies -->
         <placeholderapi.version>2.10.10</placeholderapi.version>
         <vault.api.version>1.7</vault.api.version>
+        <lombok.version>1.18.22</lombok.version>
 
         <!-- Maven plugins -->
-        <compiler.maven.plugin.version>3.8.1</compiler.maven.plugin.version>
-        <source.maven.plugin.version>3.2.0</source.maven.plugin.version>
+        <maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
+        <maven.source.plugin.version>3.2.0</maven.source.plugin.version>
     </properties>
 
     <repositories>
@@ -59,19 +55,19 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- Placeholders API -->
-        <dependency>
-            <groupId>me.clip</groupId>
-            <artifactId>placeholderapi</artifactId>
-            <version>${placeholderapi.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
         <!-- SKLibrary -->
         <dependency>
             <groupId>ru.soknight</groupId>
             <artifactId>sklibrary</artifactId>
             <version>${sklibrary.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Placeholders API -->
+        <dependency>
+            <groupId>me.clip</groupId>
+            <artifactId>placeholderapi</artifactId>
+            <version>${placeholderapi.version}</version>
             <scope>provided</scope>
         </dependency>
 
@@ -105,12 +101,14 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>${compiler.maven.plugin.version}</version>
+                <version>${maven.compiler.plugin.version}</version>
                 <configuration>
                     <compilerArgs>
                         <arg>-Xlint:deprecation</arg>
                         <arg>-Xlint:unchecked</arg>
                     </compilerArgs>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
                 </configuration>
             </plugin>
 
@@ -118,7 +116,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>${source.maven.plugin.version}</version>
+                <version>${maven.source.plugin.version}</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
