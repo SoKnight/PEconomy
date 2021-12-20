@@ -1,20 +1,20 @@
-# Created by https://www.gitignore.io/api/java,linux,maven,eclipse
-# Edit at https://www.gitignore.io/?templates=java,linux,maven,eclipse
+### Intellij IDEA ###
 
-# ignore .idea shit
+# .idea directory
 .idea/
 
-# ignore bash scripts
-*.sh
+# IDEA project configurations
+*.iml
 
 ### Java ###
-# Compiled class file
+
+# compiled class file
 *.class
 
-# Log file
+# log file
 *.log
 
-# Package Files #
+# package files #
 *.jar
 *.war
 *.nar
@@ -27,12 +27,13 @@
 hs_err_pid*
 
 ### Linux ###
+*~
+
+# ignore bash scripts
+*.sh
 
 # temporary files which can be created if a process still has a handle open of a deleted file
 .fuse_hidden*
-
-# KDE directory preferences
-.directory
 
 # Linux trash folder which might appear on any partition or disk
 .Trash-*
@@ -52,5 +53,3 @@ buildNumber.properties
 .mvn/timing.properties
 .mvn/wrapper/maven-wrapper.jar
 .flattened-pom.xml
-
-# End of https://www.gitignore.io/api/java,linux,maven,eclipse
