@@ -13,7 +13,6 @@ import ru.soknight.peconomy.database.model.TransactionModel;
 import ru.soknight.peconomy.database.model.WalletModel;
 import ru.soknight.peconomy.event.wallet.WalletCreateEvent;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
@@ -42,7 +41,7 @@ public final class DatabaseManager extends AbstractQuietExecutor {
         try {
             if(connection != null)
                 connection.close();
-        } catch (IOException ignored) {}
+        } catch (Exception ignored) {}
     }
     
     // --- wallets
