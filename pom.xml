@@ -15,6 +15,12 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>8</java.version>
 
+        <!-- Manifest -->
+        <manifest.contact>https://vk.me/soknight/</manifest.contact>
+        <manifest.developer>SoKnight</manifest.developer>
+        <manifest.github>https://github.com/SoKnight/PEconomy</manifest.github>
+        <manifest.version>${project.version}</manifest.version>
+
         <!-- Dependencies -->
         <spigot.api.version>1.13.2-R0.1-SNAPSHOT</spigot.api.version>
         <sklibrary.version>1.15.0</sklibrary.version>
@@ -24,6 +30,7 @@
 
         <!-- Maven plugins -->
         <maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
+        <maven.jar.plugin.version>3.2.0</maven.jar.plugin.version>
         <maven.source.plugin.version>3.2.0</maven.source.plugin.version>
     </properties>
 
@@ -109,6 +116,27 @@
                     </compilerArgs>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
+                </configuration>
+            </plugin>
+
+            <!-- Maven jar plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>${maven.jar.plugin.version}</version>
+                <configuration>
+                    <archive>
+                        <addMavenDescriptor>false</addMavenDescriptor>
+                        <manifest>
+                            <addDefaultEntries>false</addDefaultEntries>
+                        </manifest>
+                        <manifestEntries>
+                            <Contact>${manifest.contact}</Contact>
+                            <Developer>${manifest.developer}</Developer>
+                            <GitHub>${manifest.github}</GitHub>
+                            <Version>${manifest.version}</Version>
+                        </manifestEntries>
+                    </archive>
                 </configuration>
             </plugin>
 
