@@ -1,6 +1,14 @@
+[spigotDownloadsImg]: https://img.shields.io/spiget/downloads/73827?label=spigotmc%20downloads&color=B440D1&style=for-the-badge
+[spigotDownloads]: https://www.spigotmc.org/resources/peconomy.73827/
+
+[githubDownloadsImg]: https://img.shields.io/github/downloads/SoKnight/PEconomy/total.svg?label=github%20downloads&color=B440D1&style=for-the-badge
+[githubDownloads]: https://github.com/SoKnight/PEconomy/releases/latest
+
 # PEconomy
 Minecraft economy plugin with unlimited currencies support and more other features.<br>
 Want to read more? See the project [WiKi](https://github.com/SoKnight/PEconomy/wiki)
+
+[![spigotDownloadsImg]][spigotDownloads] [![githubDownloadsImg]][githubDownloads]
 
 ## Compatibility
 - Supported game versions: **1.12.X** - **1.18.X**
@@ -12,10 +20,6 @@ Want to read more? See the project [WiKi](https://github.com/SoKnight/PEconomy/w
 - [PlaceholderAPI](https://github.com/PlaceholderAPI/PlaceholderAPI) for placeholders expansion
 
 Required dependencies are marked with `*` symbol.
-
-## Downloads
-- Spigot: [![](http://badge.henrya.org/spigot/downloads?id=73827)](https://www.spigotmc.org/resources/peconomy.73827/)
-- GitHub: [![](https://img.shields.io/github/downloads/SoKnight/PEconomy/total.svg)](https://github.com/SoKnight/PEconomy/releases/latest)
 
 ## Community suggestions
 | Version | Author | Suggestion |
