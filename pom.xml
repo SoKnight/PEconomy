@@ -64,8 +64,8 @@
 
         <!-- SKLibrary -->
         <dependency>
-            <groupId>ru.soknight</groupId>
-            <artifactId>sklibrary</artifactId>
+            <groupId>com.github.SoKnight</groupId>
+            <artifactId>SKLibrary</artifactId>
             <version>${sklibrary.version}</version>
             <scope>provided</scope>
         </dependency>
