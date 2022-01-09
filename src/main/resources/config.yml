@@ -79,10 +79,6 @@ hooks:
   # Should plugin add own placeholders into PlaceholderAPI?
   papi: true
 
-# Should plugin send tab-completions with all wallets owners from database or not
-# Specify 'true' as positive answer and 'false' to say that should send only online players names
-extended-players-completions: true
-
 # Should plugin hide unknown stored balances currencies or not
 # Example: You adds someone amount to player's wallet and after it you removes this currency from config and
 # when this player wants check him balance, he don't see unknown currency balance if this feature will be enabled
