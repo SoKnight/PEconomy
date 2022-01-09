@@ -3,7 +3,7 @@
 
     <groupId>ru.soknight</groupId>
     <artifactId>peconomy</artifactId>
-    <version>2.7.0</version>
+    <version>2.7.1</version>
     <packaging>jar</packaging>
 
     <name>PEconomy</name>
@@ -23,7 +23,7 @@
 
         <!-- Dependencies -->
         <spigot.api.version>1.13.2-R0.1-SNAPSHOT</spigot.api.version>
-        <sklibrary.version>1.15.0</sklibrary.version>
+        <sklibrary.version>1.15.1</sklibrary.version>
         <placeholderapi.version>2.10.10</placeholderapi.version>
         <vault.api.version>1.7</vault.api.version>
         <lombok.version>1.18.22</lombok.version>
