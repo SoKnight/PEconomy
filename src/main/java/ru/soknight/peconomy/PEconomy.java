@@ -30,6 +30,7 @@ import ru.soknight.peconomy.hook.PEconomyExpansion;
 import ru.soknight.peconomy.hook.VaultEconomyProvider;
 import ru.soknight.peconomy.listener.PapiExpansionsLoadListener;
 import ru.soknight.peconomy.listener.PlayerJoinListener;
+import ru.soknight.peconomy.listener.PluginEnableListener;
 
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -137,18 +138,26 @@ public final class PEconomy extends JavaPlugin {
     private void hookInto() {
         // PlaceholderAPI hook
         if(config.getBoolean("hooks.papi", true)) {
-            if(Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-                PEconomyExpansion expansion = new PEconomyExpansion(this, databaseManager, currenciesManager);
-                new PapiExpansionsLoadListener(this, expansion);
-            }
+            registerPlaceholderApiHook();
         }
 
         // Vault hook
         if(config.getBoolean("hooks.vault.enabled", false)) {
-            if(Bukkit.getPluginManager().isPluginEnabled("Vault")) {
-                this.economyProvider.registerEconomyService(config, messages, databaseManager, currenciesManager);
-                getLogger().info("Registered as Vault economy provider!");
-            }
+            registerVaultEconomyHook();
+        }
+    }
+
+    public void registerPlaceholderApiHook() {
+        if(Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+            PEconomyExpansion expansion = new PEconomyExpansion(this, databaseManager, currenciesManager);
+            new PapiExpansionsLoadListener(this, expansion);
+        }
+    }
+
+    public void registerVaultEconomyHook() {
+        if(Bukkit.getPluginManager().isPluginEnabled("Vault")) {
+            this.economyProvider.registerEconomyService(config, messages, databaseManager, currenciesManager);
+            getLogger().info("Registered as Vault economy provider!");
         }
     }
     
@@ -175,6 +184,7 @@ public final class PEconomy extends JavaPlugin {
     private void registerListeners() {
         // --- bukkit events listeners
         new PlayerJoinListener(this, config, databaseManager, currenciesManager);
+        new PluginEnableListener(this);
     }
 
     public void reload() {

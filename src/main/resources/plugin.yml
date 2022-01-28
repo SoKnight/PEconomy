@@ -4,6 +4,7 @@ author: SoKnight
 version: ${project.version}
 depend: [SKLibrary]
 softdepend: [PlaceholderAPI, Vault]
+load: startup
 api-version: 1.13
 description: ${project.description}
 

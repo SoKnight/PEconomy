@@ -3,7 +3,7 @@
 
     <groupId>ru.soknight</groupId>
     <artifactId>peconomy</artifactId>
-    <version>2.7.1</version>
+    <version>2.7.2</version>
     <packaging>jar</packaging>
 
     <name>PEconomy</name>
@@ -64,8 +64,8 @@
 
         <!-- SKLibrary -->
         <dependency>
-            <groupId>com.github.SoKnight</groupId>
-            <artifactId>SKLibrary</artifactId>
+            <groupId>me.soknight</groupId>
+            <artifactId>sklibrary</artifactId>
             <version>${sklibrary.version}</version>
             <scope>provided</scope>
         </dependency>
