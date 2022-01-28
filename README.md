@@ -24,8 +24,9 @@ Required dependencies are marked with `*` symbol.
 ## Community suggestions
 | Version | Author | Suggestion |
 |:---:|:---:|---|
-| 2.8.0 | [Feliks Cavalli](https://github.com/whereareiam) | Ability to add actionbar text display and sound playing |
-| 2.8.0 | [Feliks Cavalli](https://github.com/whereareiam) | Ability to change the plugin command that displaying in the `/peco help` |
+| **2.9.0** | Kapitan Wardacum (DS) | Own banking system out-the-box |
+| **2.8.0** | [Feliks Cavalli](https://github.com/whereareiam) | Ability to add actionbar text display and sound playing |
+| **2.8.0** | [Feliks Cavalli](https://github.com/whereareiam) | Ability to change the plugin command that displaying in the `/peco help` |
 | 2.7.0 | [Dmitry Sidletskiy](https://vk.com/dmtrsdltsk) | Serialize wallets as JSON string |
 | 2.7.0 | [Feliks Cavalli](https://github.com/whereareiam) | Ability to link a player wallet with owner UUID (optionally) |
 
