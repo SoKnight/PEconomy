@@ -137,17 +137,16 @@ public final class PEconomy extends JavaPlugin {
     
     private void hookInto() {
         // PlaceholderAPI hook
-        if(config.getBoolean("hooks.papi", true)) {
-            registerPlaceholderApiHook();
-        }
+        registerPlaceholderApiHook();
 
         // Vault hook
-        if(config.getBoolean("hooks.vault.enabled", false)) {
-            registerVaultEconomyHook();
-        }
+        registerVaultEconomyHook();
     }
 
     public void registerPlaceholderApiHook() {
+        if(!config.getBoolean("hooks.papi", true))
+            return;
+
         if(Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             PEconomyExpansion expansion = new PEconomyExpansion(this, databaseManager, currenciesManager);
             new PapiExpansionsLoadListener(this, expansion);
@@ -155,6 +154,9 @@ public final class PEconomy extends JavaPlugin {
     }
 
     public void registerVaultEconomyHook() {
+        if(!config.getBoolean("hooks.vault.enabled", false))
+            return;
+
         if(Bukkit.getPluginManager().isPluginEnabled("Vault")) {
             this.economyProvider.registerEconomyService(config, messages, databaseManager, currenciesManager);
             getLogger().info("Registered as Vault economy provider!");
