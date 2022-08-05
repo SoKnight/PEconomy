@@ -178,7 +178,7 @@ public final class PEconomy extends JavaPlugin {
     }
     
     private void registerCommands() {
-        new CommandPeconomy(this, messages, databaseManager, currenciesManager);
+        new CommandPeconomy(this, config, messages, databaseManager, currenciesManager);
         new CommandBalance(this, config, messages, databaseManager, currenciesManager);
         new CommandPay(this, messages, databaseManager, currenciesManager);
     }

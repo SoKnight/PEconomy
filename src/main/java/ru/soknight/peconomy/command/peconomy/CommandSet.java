@@ -5,6 +5,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import ru.soknight.lib.argument.CommandArguments;
 import ru.soknight.lib.command.preset.subcommand.ArgumentableSubcommand;
+import ru.soknight.lib.configuration.Configuration;
 import ru.soknight.lib.configuration.Messages;
 import ru.soknight.peconomy.PEconomy;
 import ru.soknight.peconomy.configuration.CurrenciesManager;
@@ -20,15 +21,24 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class CommandSet extends ArgumentableSubcommand {
-    
+
+    private final Configuration config;
     private final Messages messages;
+
     private final DatabaseManager databaseManager;
     private final CurrenciesManager currenciesManager;
     
-    public CommandSet(Messages messages, DatabaseManager databaseManager, CurrenciesManager currenciesManager) {
+    public CommandSet(
+            Configuration config,
+            Messages messages,
+            DatabaseManager databaseManager,
+            CurrenciesManager currenciesManager
+    ) {
         super(null, "peco.command.set", 3, messages);
-        
+
+        this.config = config;
         this.messages = messages;
+
         this.databaseManager = databaseManager;
         this.currenciesManager = currenciesManager;
     }
@@ -90,7 +100,9 @@ public class CommandSet extends ArgumentableSubcommand {
                 return;
 
             databaseManager.saveWallet(wallet).join();
-            databaseManager.saveTransaction(transaction).join();
+
+            if (config.getBoolean("transactions-history.enabled", true))
+                databaseManager.saveTransaction(transaction).join();
 
             new TransactionFinishEvent(wallet, initiator, transaction).fireAsync();
 

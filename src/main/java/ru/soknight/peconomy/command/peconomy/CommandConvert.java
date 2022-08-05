@@ -5,6 +5,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import ru.soknight.lib.argument.CommandArguments;
 import ru.soknight.lib.command.preset.subcommand.ArgumentableSubcommand;
+import ru.soknight.lib.configuration.Configuration;
 import ru.soknight.lib.configuration.Messages;
 import ru.soknight.peconomy.api.PEconomyAPI;
 import ru.soknight.peconomy.configuration.CurrenciesManager;
@@ -21,14 +22,22 @@ import java.util.stream.Collectors;
 
 public final class CommandConvert extends ArgumentableSubcommand {
 
+    private final Configuration config;
     private final Messages messages;
     private final DatabaseManager databaseManager;
     private final CurrenciesManager currenciesManager;
 
-    public CommandConvert(Messages messages, DatabaseManager databaseManager, CurrenciesManager currenciesManager) {
+    public CommandConvert(
+            Configuration config,
+            Messages messages,
+            DatabaseManager databaseManager,
+            CurrenciesManager currenciesManager
+    ) {
         super("peco.command.convert", 3, messages);
 
+        this.config = config;
         this.messages = messages;
+
         this.databaseManager = databaseManager;
         this.currenciesManager = currenciesManager;
     }
@@ -154,8 +163,10 @@ public final class CommandConvert extends ArgumentableSubcommand {
                     TransactionCause.CONVERTATION
             );
 
-            databaseManager.saveTransaction(firstTransaction).join();
-            databaseManager.saveTransaction(secondTransaction).join();
+            if (config.getBoolean("transactions-history.enabled", true)) {
+                databaseManager.saveTransaction(firstTransaction).join();
+                databaseManager.saveTransaction(secondTransaction).join();
+            }
 
             if(!other) {
                 messages.sendFormatted(sender, "convert.success.operator.self",
