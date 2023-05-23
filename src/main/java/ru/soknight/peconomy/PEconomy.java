@@ -7,7 +7,6 @@ import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
-import ru.soknight.lib.configuration.Configuration;
 import ru.soknight.lib.configuration.LocalizableMessages;
 import ru.soknight.lib.configuration.Messages;
 import ru.soknight.lib.configuration.locale.examiner.LocaleTagExaminer;
@@ -21,6 +20,7 @@ import ru.soknight.peconomy.command.CommandBalance;
 import ru.soknight.peconomy.command.CommandPay;
 import ru.soknight.peconomy.command.CommandPeconomy;
 import ru.soknight.peconomy.configuration.CurrenciesManager;
+import ru.soknight.peconomy.configuration.HookingConfiguration;
 import ru.soknight.peconomy.database.DatabaseManager;
 import ru.soknight.peconomy.database.model.TransactionModel;
 import ru.soknight.peconomy.database.model.WalletModel;
@@ -51,7 +51,7 @@ public final class PEconomy extends JavaPlugin {
 
     private static PEconomyAPI apiInstance;
     
-    private Configuration config;
+    private HookingConfiguration config;
     private Messages messages;
     
     private DatabaseManager databaseManager;
@@ -189,7 +189,7 @@ public final class PEconomy extends JavaPlugin {
     }
     
     private void loadConfigurations() {
-        this.config = new Configuration(this, "config.yml");
+        this.config = new HookingConfiguration(this, "config.yml");
         this.config.refresh();
 
         this.messages = new LocalizableMessages(this)
