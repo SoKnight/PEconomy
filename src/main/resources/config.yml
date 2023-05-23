@@ -29,6 +29,21 @@
 #
 # Configuration of database connection
 database:
+  reconnect:
+    #  Whether the plugin should try reconnecting to the database
+    # after discovering a connection loose.
+    auto: true
+    #  Time intervals to perform reconnection task.
+    # The reconnection task will be run sequentially with the said
+    # intervals, the last one will be repeated indefinitely.
+    #
+    #  For example, your intervals are [ 1, 2, 3, 60 ], the plugin
+    # will try to reconnect, if it fails the next attempts will
+    # appear in 1, then in 2 and 3 seconds. If 1, 2 and 3 intervals
+    # fail, all the next attempts will only use the last 60 sec.
+    # interval.
+    intervals-in-seconds: [0, 5, 5, 5, 30, 60, 120]
+
   # The type of used database
   # Supported types: [mysql, sqlite, postgresql]
   type: sqlite
