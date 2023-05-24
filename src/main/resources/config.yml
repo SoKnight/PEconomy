@@ -79,6 +79,12 @@ hooks:
   # Should plugin add own placeholders into PlaceholderAPI?
   papi: true
 
+  # Should plugin add own placeholders into HolographicDisplays?
+  hdapi:
+    enabled: true
+    # The refresh interval (in ticks) for all placeholders
+    refresh-interval: 100
+
 # Should plugin hide unknown stored balances currencies or not
 # Example: You adds someone amount to player's wallet and after it you removes this currency from config and
 # when this player wants check him balance, he don't see unknown currency balance if this feature will be enabled

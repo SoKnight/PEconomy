@@ -6,7 +6,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
-import ru.soknight.peconomy.hook.PEconomyExpansion;
+import ru.soknight.peconomy.hook.placeholder.PEconomyExpansion;
 
 public final class PapiExpansionsLoadListener implements Listener {
 

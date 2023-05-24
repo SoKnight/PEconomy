@@ -3,8 +3,7 @@ main: ru.soknight.peconomy.PEconomy
 author: SoKnight
 version: ${project.version}
 depend: [SKLibrary]
-softdepend: [PlaceholderAPI, Vault]
-load: startup
+softdepend: [PlaceholderAPI, HolographicDisplays, Vault]
 api-version: 1.13
 description: ${project.description}
 

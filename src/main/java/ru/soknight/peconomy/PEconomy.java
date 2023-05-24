@@ -1,6 +1,8 @@
 package ru.soknight.peconomy;
 
 import com.j256.ormlite.field.DataPersisterManager;
+import com.j256.ormlite.logger.Level;
+import com.j256.ormlite.logger.Logger;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -26,7 +28,8 @@ import ru.soknight.peconomy.database.model.deprecated.TransactionModelV1;
 import ru.soknight.peconomy.database.model.deprecated.WalletModelV1;
 import ru.soknight.peconomy.database.persister.LocalDateTimePersister;
 import ru.soknight.peconomy.format.Formatter;
-import ru.soknight.peconomy.hook.PEconomyExpansion;
+import ru.soknight.peconomy.hook.placeholder.HolographicDisplaysExpansion;
+import ru.soknight.peconomy.hook.placeholder.PEconomyExpansion;
 import ru.soknight.peconomy.hook.VaultEconomyProvider;
 import ru.soknight.peconomy.listener.PapiExpansionsLoadListener;
 import ru.soknight.peconomy.listener.PlayerJoinListener;
@@ -39,6 +42,10 @@ import java.util.List;
 @SuppressWarnings("deprecation")
 @ActualSchemaVersion(2)
 public final class PEconomy extends JavaPlugin {
+
+    static {
+        Logger.setGlobalLogLevel(Level.FATAL);
+    }
 
     private static final List<String> SUPPORTED_LOCALE_TAGS = Arrays.asList("en", "ru");
 
@@ -56,7 +63,7 @@ public final class PEconomy extends JavaPlugin {
     private Formatter formatter;
 
     @Override
-    public void onEnable() {
+    public void onLoad() {
         // configurations initialization
         loadConfigurations();
 
@@ -94,6 +101,15 @@ public final class PEconomy extends JavaPlugin {
         // Vault economy provider initialization
         this.economyProvider = new VaultEconomyProvider(this);
 
+        // PEconomy API initialization
+        apiInstance = new SimplePEconomyAPI(databaseManager, currenciesManager, economyProvider, formatter);
+    }
+
+    @Override
+    public void onEnable() {
+        // launch updating tasks
+        currenciesManager.launchUpdatingTasks();
+
         // commands executors initialization
         registerCommands();
 
@@ -102,9 +118,6 @@ public final class PEconomy extends JavaPlugin {
 
         // hooking into some plugins
         hookInto();
-
-        // PEconomy API initialization
-        apiInstance = new SimplePEconomyAPI(databaseManager, currenciesManager, economyProvider, formatter);
 
         getLogger().info("Let's go! (づ｡◕‿‿◕｡)づ");
     }
@@ -139,6 +152,9 @@ public final class PEconomy extends JavaPlugin {
         // PlaceholderAPI hook
         registerPlaceholderApiHook();
 
+        // HolographicDisplays Hook
+        registerHolographicDisplaysHook();
+
         // Vault hook
         registerVaultEconomyHook();
     }
@@ -150,6 +166,15 @@ public final class PEconomy extends JavaPlugin {
         if(Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             PEconomyExpansion expansion = new PEconomyExpansion(this, databaseManager, currenciesManager);
             new PapiExpansionsLoadListener(this, expansion);
+        }
+    }
+
+    public void registerHolographicDisplaysHook() {
+        if(!config.getBoolean("hooks.hdapi.enabled", true))
+            return;
+
+        if(Bukkit.getPluginManager().isPluginEnabled("HolographicDisplays")) {
+            new HolographicDisplaysExpansion(this, config, databaseManager, currenciesManager);
         }
     }
 

@@ -35,6 +35,16 @@ public final class CurrenciesManager extends AbstractConfiguration {
         refreshCurrencies();
     }
 
+    public void launchUpdatingTasks() {
+        currencies.values().forEach(currency -> {
+            if (currency.useBalanceTop()) {
+                PluginTask updateTask = new BalanceTopUpdateTask(getPlugin(), currency);
+                updateTask.start();
+                updateTasks.put(currency.getId(), updateTask);
+            }
+        });
+    }
+
     public void shutdownUpdatingTasks() {
         updateTasks.values().forEach(PluginTask::shutdown);
     }
@@ -84,12 +94,6 @@ public final class CurrenciesManager extends AbstractConfiguration {
                     .create();
 
             currencies.put(currencyId, currency);
-
-            if (balanceTop != null) {
-                PluginTask updateTask = new BalanceTopUpdateTask(getPlugin(), currency, balanceTop);
-                updateTask.start();
-                updateTasks.put(currencyId, updateTask);
-            }
         });
 
         currencies.forEach((currencyId, currency) -> {
@@ -141,6 +145,16 @@ public final class CurrenciesManager extends AbstractConfiguration {
     
     public boolean isCurrency(String id) {
         return currencies.containsKey(id);
+    }
+
+    public String formatPlace(@NotNull BalanceTopPlace place) {
+        String currencyId = place.getCurrencyId();
+
+        CurrencyInstance currency = getCurrency(currencyId);
+        if (currency == null)
+            return "UNKNOWN CURRENCY";
+
+        return formatPlace(currency.getBalanceTopSetup(), place);
     }
 
     public String formatPlace(BalanceTopSetup setup, @NotNull BalanceTopPlace place) {

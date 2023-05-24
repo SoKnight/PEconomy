@@ -15,12 +15,11 @@ public final class BalanceTopUpdateTask extends AsyncPluginTask {
 
     public BalanceTopUpdateTask(
             @NotNull Plugin plugin,
-            @NotNull CurrencyInstance currency,
-            @NotNull BalanceTop balanceTop
+            @NotNull CurrencyInstance currency
     ) {
         super(plugin);
         this.currency = currency;
-        this.balanceTop = balanceTop;
+        this.balanceTop = currency.getBalanceTop();
     }
 
     @Override
