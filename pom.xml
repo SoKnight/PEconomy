@@ -8,7 +8,7 @@
 
     <name>PEconomy</name>
     <description>An economy provider with unlimited currencies and Vault support</description>
-    <url>https://github.com/SoKnight/PEconomy/</url>
+    <url>https://github.com/SoKnight/PEconomy</url>
 
     <properties>
         <!-- Building -->
@@ -18,7 +18,7 @@
         <!-- Manifest -->
         <manifest.contact>https://t.me/soknight/</manifest.contact>
         <manifest.developer>SoKnight</manifest.developer>
-        <manifest.github>https://github.com/SoKnight/PEconomy/</manifest.github>
+        <manifest.github>https://github.com/SoKnight/PEconomy</manifest.github>
         <manifest.version>${project.version}</manifest.version>
 
         <!-- Dependencies -->
