@@ -1,0 +1,205 @@
+# ------------------------------------------------------------------
+#
+# PEconomy 消息文件中文翻译
+# 生成版本 2.7.4
+#
+# 作者兼开发者: SoKnight
+# 译者: Yakumo_Reddo
+#
+# Github wiki: https://github.com/SoKnight/PEconomy/wiki
+# SpigotMC page: https://www.spigotmc.org/resources/peconomy.73827/
+#
+# ------------------------------------------------------------------
+#
+# 所有消息都设置了颜色, 使用 '&' 作为颜色字符.
+# 一些消息存在占位符; 这些占位符使用 '%' 符号括起来, 例如: '%player%', '%currency%' 以及更多.
+# 请不要编辑这些占位符, 因为这些占位符要替换为真实数据.
+# 同时不要编辑消息段落格式, 这些格式在代码中很重要.
+#
+# 如果你在游戏聊天栏发现了未翻译的消息, 说明这个消息文件过期了，需要更新;
+# 删除 messages_en.yml 文件并且重载PEconomy插件 (输入 /peco reload) 或完全重启服务器
+#
+#
+# 常用错误
+error:
+  no-args: "&c请指定子命令或输入 '/peco help' 获取帮助."
+  unknown-subcommand: "&c未知子命令, 输入 '/peco help' 获取帮助."
+  wrong-syntax: "&c命令格式错误, 输入 '/peco help' 获取帮助."
+  only-for-players: "&c只有玩家可以使用这个命令."
+  no-permissions: "&c你没有权限使用这个命令."
+  arg-is-not-float: "&c参数 '%arg%' 必须为正整数或正浮点数."
+  arg-is-not-int: "&c参数 '%arg%' 必须为正整数."
+  unknown-currency: "&c未知经济 '%currency%'."
+  unknown-wallet: "&c玩家 '%player%' 目前还没有钱包."
+
+# 其他消息中用到的操作符
+operation:
+  increase: '&a»'
+  decrease: '&c»'
+
+# 增加账户余额
+add:
+  failed:
+    limit-reached: "&c本次交易抵达了交易上限 — %limit%%currency%."
+  success:
+    operator: "&f将 &b%amount%%currency% &f添加给玩家 &b%player% &f账户余额: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)"
+    holder: '&6| &f你的账户中增加了 &b%amount%%currency% &f余额: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)'
+
+# 设置账户余额
+set:
+  failed:
+    limit-reached: "&c本次交易抵达了交易上限 — %limit%%currency%."
+    already-equals: "&c%player% 的账户余额已经为 %amount%%currency%."
+  success:
+    operator: "&f设置 &b%player% &f的账户余额: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)"
+    holder: '&6| &f你的账户余额变更了: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)'
+
+# 重置账户余额
+reset:
+  failed:
+    already: "&c%player% 的该账户余额已经清空."
+  success:
+    operator: "&f清空了 &b%player% &f的账户余额: &b%from%%currency% %operation% &b0%currency% &7(#%id%)"
+    holder: '&6| &f你的账户被清空了: &b%from%%currency% %operation% &b0%currency% &7(#%id%)'
+
+# 减少账户余额
+take:
+  failed:
+    not-enough: "&c%player% 的账户中只有 %amount%%currency% 少于所需求的的 %requested%%currency%."
+  success:
+    operator: "&f将 &b%amount%%currency% &f从 &b%player% &f的账户余额中扣除: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)"
+    holder: '&6| &f你的账户中扣除了 &b%amount%%currency% &f余额: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)'
+
+# 货币兑换
+convert:
+  failed:
+    empty-wallet: "&c%player% 的钱包已经空了."
+    same-named-currency: "&c哦.. 这样并没有用, 你说呢?"
+    unconvertable: '&c货币 %currency_first_name% (%currency_first%) 无法转换为 %currency_second_name% (%currency_second%).'
+    not-enough: 
+      other: "&c%player% 的账户中只有 %amount%%currency% 少于需求的 %requested%%currency%."
+      self: "&c你只有 %amount%%currency% 少于所需求的 %requested%%currency%."
+    limit-reached: "&c本次操作抵达了上限 — %limit%%currency%."
+  success:
+    operator: 
+      other: |
+        &f 将 &b%amount_first%%currency_first% &f兑换为 &b%amount_second%%currency_second% &f到 &b%player% &f的账户: 
+        &7账户 &a%currency_first_name%&7: &b%amount_first_from%%currency_first% &c» &b%amount_first_to%%currency_first% &7(#%id_first%)
+        &7账户 &a%currency_second_name%&7: &b%amount_second_from%%currency_second% &a» &b%amount_second_to%%currency_second% &7(#%id_second%)
+      self: |
+        &f 将 &b%amount_first%%currency_first% &f兑换为 &b%amount_second%%currency_second% &f到你的账户: 
+        &7账户 &a%currency_first_name%&7: &b%amount_first_from%%currency_first% &c» &b%amount_first_to%%currency_first% &7(#%id_first%)
+        &7账户 &a%currency_second_name%&7: &b%amount_second_from%%currency_second% &a» &b%amount_second_to%%currency_second% &7(#%id_second%)
+    holder: |
+      &6| &f将 &b%amount_first%%currency_first% &f兑换为 &b%amount_second%%currency_second% &f到你的账户: 
+      &6| &7账户 &a%currency_first_name%&7: &b%amount_first_from%%currency_first% &c» &b%amount_first_to%%currency_first% &7(#%id_first%)
+      &6| &7账户 &a%currency_second_name%&7: &b%amount_second_from%%currency_second% &a» &b%amount_second_to%%currency_second% &7(#%id_second%)
+
+# 账户信息
+balance:
+  failed:
+    empty:
+      other: "&c%player% 的账户是空的 :("
+      self: "&c你的账户是空的 :("
+  success:
+    other: "&f%player% 的账户余额: &r%balance%"
+    self: "&f你的账户余额: &r%balance%"
+
+  # 'format' 和 'separator' 是用来格式化 %balance% 占位符的字符串
+  # 'separator' 是在有多种货币是将多种货币进行划分的字符
+  # 插件默认会显示空的货币账户, 你可以在 config.yml 中禁用这项功能
+  format: "&b%amount%%currency%"
+  separator: "&f, "
+
+# 货币转账
+pay:
+  failed:
+    to-self: "&c哦.. 这样并没有用, 你说呢?"
+    not-enough: "&c你的账户中只有 %amount%%currency% 少于所需求的 %requested%%currency%."
+    limit-reached: "&c本次转账会达到收款人的交易上限 (%limit%%currency%)."
+    untransferable: "&c你不能用这种货币转账."
+  success:
+    sender: "&f发送 &b%amount%%currency% &f到 &b%receiver% &f的账户中, 你的账户余额: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)"
+    receiver: '&6| &f你收到了 &b%amount%%currency% &f来自 &b%sender%&f: &b%from%%currency% %operation% &b%to%%currency% &7(#%id%)'
+
+# 转账历史
+history:
+  failed:
+    no-transactions: '&c没有转装记录.'
+    page-is-empty: "&c第 %page% 页是空的."
+
+  header:
+    other: "   &7%player% 的转账历史 [%page%/%total%]"
+    self: "   &7你的转账历史 [%page%/%total%]"
+  body: " &7#%id% &f%date%: &b%from%%currency% %operation% &b%to%%currency% &7(%action%)"
+  footer: " "
+
+  # 每页显示数量
+  page-size: 10
+
+# 转账信息
+info:
+  failed:
+    unknown-id: "&c转账记录 #%id% 不存在."
+
+  success: |2-
+    &7   转账信息
+    &f 转账ID: &b#%id%
+    &f 账户持有人: &b%owner%
+    &f 种类: &b%action%
+    &f 转账前: &b%pre%%symbol%
+    &f 转账后: &b%post%%symbol%
+    &f 账户货币: &b%currency% (%symbol%)
+    &f 日期: &b%date%
+    &f
+
+# %action% 动作占位符
+# 你可以使用 %source% 显示动作来源 (其他玩家, 发送者或是命令)
+# * 来源会显示所有玩家 (包括想要隐蔽增加余额的管理员)
+action:
+  add: "由 #管理员 增加"
+  set: "由 #管理员 修改"
+  reset: "由 #管理员 重置"
+  take: "由 #管理员 减少"
+  payment: 
+    incoming: "来自 %source% 的交易"
+    outcoming: "发送给 %source% 的交易"
+  convertation: "货币兑换"
+  failed: "&c失败"
+
+# 来自控制台的操作来源
+# 例如: 0.0 » 0.2 (由 #console 增加), 这里 #console 是操作来源
+console-operator: "#console"
+
+# 插件重载完成信息 (命令 /peco reload)
+reload-success: "&fPEconomy 重载完成."
+
+# 帮助消息
+help:
+  header: "   &7PEconomy 帮助"
+  body: " &b/%command% &f&l- &f%description%"
+  footer: " "
+  # 命令描述
+  descriptions:
+    balance: '查看账户余额'
+    pay: '将钱转给其他玩家'
+    help: '显示帮助页面'
+    add: '添加账户余额'
+    set: '更改账户余额'
+    reset: '清空账户余额'
+    take: '减少账户余额'
+    info: '显示转账信息'
+    history: '查看转账历史'
+    convert: '兑换为其他货币'
+    reload: '重新加载配置'
+  # 命令占位符
+  # 会用在有需要的子命令后面
+  arguments:
+    player-req: '<player>'
+    player-opt: '[player]'
+    currency: '<currency>'
+    currency-first: '<from>'
+    currency-second: '<to>'
+    amount: '<amount>'
+    page: '[page]'
+    id: '<id>'
